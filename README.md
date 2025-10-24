@@ -14,12 +14,16 @@ This plugin is designed for:
 
 ## Features
 
+- **Multi-Project Support**: Save and manage multiple GitHub projects in one place
+- **Project Cards**: Visual card-based interface showing all your saved projects
+- **One-Click Sync**: Synchronize any saved project to pull the latest version from Git
 - Install plugins directly from public or private GitHub repositories
 - Update existing plugins installed from GitHub
 - Preview repository contents before installation
 - Select specific versions (tags) of a plugin to install
 - Support for private repositories using GitHub Personal Access Tokens
 - Automatic plugin folder naming based on the repository name
+- Track last synchronization time for each project
 
 ## Installation
 
@@ -29,12 +33,33 @@ This plugin is designed for:
 
 ## Usage
 
+### Installing a New Plugin
+
 1. In the WordPress admin panel, go to Plugins > GitHub Installer.
-2. Enter the GitHub repository URL of the plugin you want to install.
-3. If it's a private repository, check the "Private Repository?" box and enter your GitHub Personal Access Token.
-4. The plugin will fetch available versions and provide a preview of the repository contents.
-5. Select the version you want to install from the dropdown menu.
-6. Click "Install/Update Plugin" to proceed with the installation or update.
+2. Enter a project name (optional) to save the project for later use.
+3. Enter the GitHub repository URL of the plugin you want to install.
+4. If it's a private repository, check the "Private Repository?" box and enter your GitHub Personal Access Token.
+5. The plugin will fetch available versions and provide a preview of the repository contents.
+6. Select the version you want to install from the dropdown menu.
+7. Click "Install/Update Plugin" to proceed with the installation or update.
+8. Optionally, click "Als Projekt speichern" (Save as Project) to save this configuration for future use.
+
+### Managing Saved Projects
+
+Once you've saved projects, they will appear as cards below the installation form:
+
+- **View Project Details**: Each card shows the project name, repository URL, version, privacy status, and last sync time.
+- **Synchronize**: Click the "Synchronisieren" button to pull the latest version from Git for that specific project.
+- **Delete**: Click the "Löschen" button to remove a saved project from your list (this won't uninstall the plugin, just removes it from the saved projects).
+
+### Synchronizing Projects
+
+The synchronization feature allows you to quickly update any saved project:
+
+1. Find the project card you want to sync.
+2. Click the "Synchronisieren" (Synchronize) button.
+3. The plugin will automatically fetch the latest version from Git and update the plugin.
+4. You'll see a status message indicating success or failure.
 
 ## Requirements
 
@@ -57,8 +82,10 @@ No additional configuration is required after installation. However, for private
 ## Security Considerations
 
 - The plugin uses nonces and capability checks to ensure only authorized users can install plugins.
-- Personal Access Tokens are not stored by the plugin and must be entered each time for private repositories.
+- **Personal Access Tokens are stored in the WordPress database** when you save a project. Ensure your WordPress installation is secure.
+- Only users with the `manage_options` capability (typically administrators) can access the plugin.
 - Always review the contents of a repository before installing to ensure it's from a trusted source.
+- Saved projects and their tokens are stored using WordPress options API with proper sanitization.
 
 ## Limitations
 
