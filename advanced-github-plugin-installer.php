@@ -292,17 +292,38 @@ function install_update_github_plugin($repo_url, $access_token, $selected_versio
             exec($set_url_command, $url_output, $url_return);
         }
 
-        $update_command = "cd " . escapeshellarg($plugin_dir) . " && git fetch --all && git checkout " . escapeshellarg($selected_version) . " 2>&1";
-        exec($update_command, $output, $return_var);
+        // Validate version before checkout
+        if (!empty($selected_version)) {
+            $update_command = "cd " . escapeshellarg($plugin_dir) . " && git fetch --all && git checkout " . escapeshellarg($selected_version) . " 2>&1";
+            exec($update_command, $output, $return_var);
+
+            if ($return_var !== 0) {
+                // Reset remote URL to original (without token) for security
+                if (!empty($access_token)) {
+                    $reset_url_command = "cd " . escapeshellarg($plugin_dir) . " && git remote set-url origin " . escapeshellarg($repo_url) . " 2>&1";
+                    exec($reset_url_command, $reset_output, $reset_return);
+                }
+                wp_die('Failed to update the plugin. Error: ' . implode("\n", $output));
+            }
+        } else {
+            // If no version specified, just fetch and pull the default branch
+            $update_command = "cd " . escapeshellarg($plugin_dir) . " && git fetch --all && git pull 2>&1";
+            exec($update_command, $output, $return_var);
+
+            if ($return_var !== 0) {
+                // Reset remote URL to original (without token) for security
+                if (!empty($access_token)) {
+                    $reset_url_command = "cd " . escapeshellarg($plugin_dir) . " && git remote set-url origin " . escapeshellarg($repo_url) . " 2>&1";
+                    exec($reset_url_command, $reset_output, $reset_return);
+                }
+                wp_die('Failed to update the plugin. Error: ' . implode("\n", $output));
+            }
+        }
 
         // Reset remote URL to original (without token) for security
         if (!empty($access_token)) {
             $reset_url_command = "cd " . escapeshellarg($plugin_dir) . " && git remote set-url origin " . escapeshellarg($repo_url) . " 2>&1";
             exec($reset_url_command, $reset_output, $reset_return);
-        }
-
-        if ($return_var !== 0) {
-            wp_die('Failed to update the plugin. Error: ' . implode("\n", $output));
         }
     } else {
         // Install new plugin
@@ -562,18 +583,38 @@ function sync_github_project() {
             exec($set_url_command, $url_output, $url_return);
         }
 
-        // Update existing plugin
-        $update_command = "cd " . escapeshellarg($plugin_dir) . " && git fetch --all && git checkout " . escapeshellarg($version) . " 2>&1";
-        exec($update_command, $output, $return_var);
+        // Update existing plugin - validate version before checkout
+        if (!empty($version)) {
+            $update_command = "cd " . escapeshellarg($plugin_dir) . " && git fetch --all && git checkout " . escapeshellarg($version) . " 2>&1";
+            exec($update_command, $output, $return_var);
+
+            if ($return_var !== 0) {
+                // Reset remote URL to original (without token) for security
+                if ($project['is_private'] && !empty($access_token)) {
+                    $reset_url_command = "cd " . escapeshellarg($plugin_dir) . " && git remote set-url origin " . escapeshellarg($repo_url) . " 2>&1";
+                    exec($reset_url_command, $reset_output, $reset_return);
+                }
+                wp_send_json_error('Synchronisierung fehlgeschlagen: ' . implode("\n", $output));
+            }
+        } else {
+            // If no version specified, just fetch and pull the default branch
+            $update_command = "cd " . escapeshellarg($plugin_dir) . " && git fetch --all && git pull 2>&1";
+            exec($update_command, $output, $return_var);
+
+            if ($return_var !== 0) {
+                // Reset remote URL to original (without token) for security
+                if ($project['is_private'] && !empty($access_token)) {
+                    $reset_url_command = "cd " . escapeshellarg($plugin_dir) . " && git remote set-url origin " . escapeshellarg($repo_url) . " 2>&1";
+                    exec($reset_url_command, $reset_output, $reset_return);
+                }
+                wp_send_json_error('Synchronisierung fehlgeschlagen: ' . implode("\n", $output));
+            }
+        }
 
         // Reset remote URL to original (without token) for security
         if ($project['is_private'] && !empty($access_token)) {
             $reset_url_command = "cd " . escapeshellarg($plugin_dir) . " && git remote set-url origin " . escapeshellarg($repo_url) . " 2>&1";
             exec($reset_url_command, $reset_output, $reset_return);
-        }
-
-        if ($return_var !== 0) {
-            wp_send_json_error('Synchronisierung fehlgeschlagen: ' . implode("\n", $output));
         }
 
         // Update last_synced timestamp
