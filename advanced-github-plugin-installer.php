@@ -285,8 +285,21 @@ function install_update_github_plugin($repo_url, $access_token, $selected_versio
 
     if ($is_update) {
         // Update existing plugin
-        $update_command = "cd " . escapeshellarg($plugin_dir) . " && git fetch --all && git checkout " . escapeshellarg($selected_version);
+        // Update remote URL with access token if provided
+        if (!empty($access_token)) {
+            $auth_repo_url = str_replace('https://', "https://{$access_token}@", $repo_url);
+            $set_url_command = "cd " . escapeshellarg($plugin_dir) . " && git remote set-url origin " . escapeshellarg($auth_repo_url) . " 2>&1";
+            exec($set_url_command, $url_output, $url_return);
+        }
+
+        $update_command = "cd " . escapeshellarg($plugin_dir) . " && git fetch --all && git checkout " . escapeshellarg($selected_version) . " 2>&1";
         exec($update_command, $output, $return_var);
+
+        // Reset remote URL to original (without token) for security
+        if (!empty($access_token)) {
+            $reset_url_command = "cd " . escapeshellarg($plugin_dir) . " && git remote set-url origin " . escapeshellarg($repo_url) . " 2>&1";
+            exec($reset_url_command, $reset_output, $reset_return);
+        }
 
         if ($return_var !== 0) {
             wp_die('Failed to update the plugin. Error: ' . implode("\n", $output));
@@ -295,14 +308,22 @@ function install_update_github_plugin($repo_url, $access_token, $selected_versio
         // Install new plugin
         $clone_command = "git clone ";
         if (!empty($access_token)) {
-            $repo_url = str_replace('https://', "https://{$access_token}@", $repo_url);
+            $repo_url_with_token = str_replace('https://', "https://{$access_token}@", $repo_url);
+            $clone_command .= escapeshellarg($repo_url_with_token) . " " . escapeshellarg($plugin_dir);
+        } else {
+            $clone_command .= escapeshellarg($repo_url) . " " . escapeshellarg($plugin_dir);
         }
-        $clone_command .= escapeshellarg($repo_url) . " " . escapeshellarg($plugin_dir);
 
         exec($clone_command, $output, $return_var);
 
         if ($return_var !== 0) {
             wp_die('Failed to clone the repository. Error: ' . implode("\n", $output));
+        }
+
+        // Reset remote URL to original (without token) for security
+        if (!empty($access_token)) {
+            $reset_url_command = "cd " . escapeshellarg($plugin_dir) . " && git remote set-url origin " . escapeshellarg($repo_url) . " 2>&1";
+            exec($reset_url_command, $reset_output, $reset_return);
         }
 
         // Checkout the selected version
@@ -534,9 +555,22 @@ function sync_github_project() {
             wp_send_json_error('Plugin ist nicht installiert. Bitte installieren Sie es zuerst über das Formular oben.');
         }
 
+        // Update remote URL with access token if private repository
+        if ($project['is_private'] && !empty($access_token)) {
+            $auth_repo_url = str_replace('https://', "https://{$access_token}@", $repo_url);
+            $set_url_command = "cd " . escapeshellarg($plugin_dir) . " && git remote set-url origin " . escapeshellarg($auth_repo_url) . " 2>&1";
+            exec($set_url_command, $url_output, $url_return);
+        }
+
         // Update existing plugin
         $update_command = "cd " . escapeshellarg($plugin_dir) . " && git fetch --all && git checkout " . escapeshellarg($version) . " 2>&1";
         exec($update_command, $output, $return_var);
+
+        // Reset remote URL to original (without token) for security
+        if ($project['is_private'] && !empty($access_token)) {
+            $reset_url_command = "cd " . escapeshellarg($plugin_dir) . " && git remote set-url origin " . escapeshellarg($repo_url) . " 2>&1";
+            exec($reset_url_command, $reset_output, $reset_return);
+        }
 
         if ($return_var !== 0) {
             wp_send_json_error('Synchronisierung fehlgeschlagen: ' . implode("\n", $output));
