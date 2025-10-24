@@ -21,6 +21,8 @@ jQuery(document).ready(function() {
     jQuery('#version').on('change', function() {
         if(jQuery(this).val()) {
             jQuery('#save_project_btn').show();
+        } else {
+            jQuery('#save_project_btn').hide();
         }
     });
 
@@ -85,22 +87,26 @@ jQuery(document).ready(function() {
                         var versions = response.data;
                         var versionSelect = jQuery('#version');
                         versionSelect.empty();
+                        versionSelect.append(jQuery('<option></option>').attr('value', '').text('-- Wählen Sie eine Version --'));
                         jQuery.each(versions, function(index, version) {
                             versionSelect.append(jQuery('<option></option>').attr('value', version).text(version));
                         });
                         jQuery('#version_row').show();
                     } else {
                         jQuery('#version_row').hide();
+                        jQuery('#save_project_btn').hide();
                         console.error('Failed to fetch versions:', response.data);
                     }
                 },
                 error: function() {
                     jQuery('#version_row').hide();
+                    jQuery('#save_project_btn').hide();
                     console.error('An error occurred while fetching the repository versions.');
                 }
             });
         } else {
             jQuery('#version_row').hide();
+            jQuery('#save_project_btn').hide();
         }
     }
 
