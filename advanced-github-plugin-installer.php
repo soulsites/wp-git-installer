@@ -518,7 +518,7 @@ function save_github_project() {
     $project_data = array(
         'name' => sanitize_text_field($_POST['name']),
         'repo_url' => esc_url_raw($_POST['repo_url']),
-        'is_private' => isset($_POST['is_private']) && $_POST['is_private'] === 'true',
+        'is_private' => !empty($_POST['is_private']) && $_POST['is_private'] !== 'false' && $_POST['is_private'] !== '0',
         'access_token' => isset($_POST['access_token']) ? sanitize_text_field($_POST['access_token']) : '',
         'version' => sanitize_text_field($_POST['version'])
     );
