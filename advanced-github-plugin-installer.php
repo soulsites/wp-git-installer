@@ -81,101 +81,6 @@ function github_plugin_installer_page() {
 
     ?>
     <style>
-        .github-projects-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-            margin: 20px 0;
-        }
-        .github-project-card {
-            background: #fff;
-            border: 1px solid #c3c4c7;
-            border-radius: 4px;
-            padding: 20px;
-            box-shadow: 0 1px 1px rgba(0,0,0,.04);
-            transition: box-shadow 0.2s ease;
-        }
-        .github-project-card:hover {
-            box-shadow: 0 2px 6px rgba(0,0,0,.1);
-        }
-        .github-project-card h3 {
-            margin-top: 0;
-            margin-bottom: 10px;
-            font-size: 16px;
-            color: #1d2327;
-        }
-        .github-project-info {
-            font-size: 13px;
-            color: #50575e;
-            margin-bottom: 15px;
-        }
-        .github-project-info p {
-            margin: 5px 0;
-            word-break: break-all;
-        }
-        .github-project-actions {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        .github-sync-btn {
-            background: #2271b1;
-            border-color: #2271b1;
-            color: #fff;
-            padding: 6px 12px;
-            border-radius: 3px;
-            cursor: pointer;
-            border: 1px solid;
-            font-size: 13px;
-            transition: background 0.2s ease;
-        }
-        .github-sync-btn:hover {
-            background: #135e96;
-            border-color: #135e96;
-        }
-        .github-sync-btn:disabled {
-            background: #c3c4c7;
-            border-color: #c3c4c7;
-            cursor: not-allowed;
-        }
-        .github-delete-btn {
-            background: #fff;
-            border-color: #c3c4c7;
-            color: #b32d2e;
-            padding: 6px 12px;
-            border-radius: 3px;
-            cursor: pointer;
-            border: 1px solid;
-            font-size: 13px;
-            transition: all 0.2s ease;
-        }
-        .github-delete-btn:hover {
-            background: #b32d2e;
-            border-color: #b32d2e;
-            color: #fff;
-        }
-        .github-sync-status {
-            font-size: 12px;
-            margin-top: 10px;
-            padding: 8px;
-            border-radius: 3px;
-            display: none;
-        }
-        .github-sync-status.success {
-            background: #d7f0db;
-            color: #00631e;
-            border: 1px solid #00631e;
-        }
-        .github-sync-status.error {
-            background: #fcf0f1;
-            color: #b32d2e;
-            border: 1px solid #b32d2e;
-        }
-        .github-sync-status.loading {
-            background: #f0f6fc;
-            color: #1d2327;
-            border: 1px solid #2271b1;
-        }
         .github-add-project-section {
             background: #fff;
             border: 1px solid #c3c4c7;
@@ -192,6 +97,45 @@ function github_plugin_installer_page() {
         .github-save-project-btn:hover {
             background: #008a20;
             border-color: #008a20;
+        }
+        .wp-list-table.github-projects-table {
+            margin-top: 20px;
+        }
+        .github-sync-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .github-delete-btn {
+            color: #b32d2e;
+        }
+        .github-delete-btn:hover {
+            background: #b32d2e;
+            border-color: #b32d2e;
+            color: #fff;
+        }
+        .github-sync-status {
+            font-size: 12px;
+            padding: 8px;
+            border-radius: 3px;
+            display: none;
+        }
+        .github-sync-status.success {
+            background: #d7f0db;
+            color: #00631e;
+            border: 1px solid #00631e;
+            display: block;
+        }
+        .github-sync-status.error {
+            background: #fcf0f1;
+            color: #b32d2e;
+            border: 1px solid #b32d2e;
+            display: block;
+        }
+        .github-sync-status.loading {
+            background: #f0f6fc;
+            color: #1d2327;
+            border: 1px solid #2271b1;
+            display: block;
         }
     </style>
     <div class="wrap">
@@ -228,6 +172,13 @@ function github_plugin_installer_page() {
                         <th scope="row"><label for="version">Version</label></th>
                         <td><select id="version" name="version"></select></td>
                     </tr>
+                    <tr id="save_project_row" style="display: none;">
+                        <th scope="row"><label for="save_project_checkbox">Projekt speichern</label></th>
+                        <td>
+                            <input type="checkbox" id="save_project_checkbox" name="save_project_checkbox">
+                            <p class="description">Wenn aktiviert, wird das Projekt gespeichert und kann später aktualisiert werden.</p>
+                        </td>
+                    </tr>
                 </table>
                 <div id="plugin_status"></div>
                 <?php submit_button('Installieren/Aktualisieren', 'primary', 'install_update_plugin', false); ?>
@@ -241,28 +192,38 @@ function github_plugin_installer_page() {
 
         <?php if (!empty($saved_projects)): ?>
             <h2>Gespeicherte Projekte</h2>
-            <div class="github-projects-grid">
-                <?php foreach ($saved_projects as $project): ?>
-                    <div class="github-project-card" data-project-id="<?php echo esc_attr($project['id']); ?>">
-                        <h3><?php echo esc_html($project['name']); ?></h3>
-                        <div class="github-project-info">
-                            <p><strong>Repository:</strong> <?php echo esc_html($project['repo_url']); ?></p>
-                            <p><strong>Version:</strong> <?php echo esc_html($project['version']); ?></p>
-                            <p><strong>Status:</strong> <?php echo $project['is_private'] ? 'Privat' : 'Öffentlich'; ?></p>
-                            <p><strong>Zuletzt synchronisiert:</strong> <?php echo esc_html($project['last_synced']); ?></p>
-                        </div>
-                        <div class="github-project-actions">
-                            <button class="github-sync-btn" data-project-id="<?php echo esc_attr($project['id']); ?>">
-                                Synchronisieren
-                            </button>
-                            <button class="github-delete-btn" data-project-id="<?php echo esc_attr($project['id']); ?>">
-                                Löschen
-                            </button>
-                        </div>
-                        <div class="github-sync-status" data-project-id="<?php echo esc_attr($project['id']); ?>"></div>
-                    </div>
-                <?php endforeach; ?>
-            </div>
+            <table class="wp-list-table widefat fixed striped">
+                <thead>
+                    <tr>
+                        <th>Projektname</th>
+                        <th>Repository</th>
+                        <th>Version</th>
+                        <th>Status</th>
+                        <th>Zuletzt synchronisiert</th>
+                        <th>Aktionen</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($saved_projects as $project): ?>
+                        <tr data-project-id="<?php echo esc_attr($project['id']); ?>">
+                            <td><strong><?php echo esc_html($project['name']); ?></strong></td>
+                            <td><?php echo esc_html($project['repo_url']); ?></td>
+                            <td><?php echo esc_html($project['version']); ?></td>
+                            <td><?php echo $project['is_private'] ? 'Privat' : 'Öffentlich'; ?></td>
+                            <td><?php echo esc_html($project['last_synced']); ?></td>
+                            <td>
+                                <button class="button button-primary github-sync-btn" data-project-id="<?php echo esc_attr($project['id']); ?>">
+                                    Aktualisieren
+                                </button>
+                                <button class="button github-delete-btn" data-project-id="<?php echo esc_attr($project['id']); ?>">
+                                    Löschen
+                                </button>
+                                <div class="github-sync-status" data-project-id="<?php echo esc_attr($project['id']); ?>" style="margin-top: 5px;"></div>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
         <?php else: ?>
             <div class="notice notice-info">
                 <p>Keine gespeicherten Projekte vorhanden. Fügen Sie oben ein neues Projekt hinzu.</p>
