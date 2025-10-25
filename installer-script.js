@@ -17,14 +17,32 @@ jQuery(document).ready(function() {
         previewTimer = setTimeout(updatePreviewAndVersions, 500);
     });
 
-    // Show "Save as Project" button when version is selected
+    // Show "Save as Project" checkbox row when version is selected
     jQuery('#version').on('change', function() {
         if(jQuery(this).val()) {
+            jQuery('#save_project_row').show();
+            updateSaveButtonVisibility();
+        } else {
+            jQuery('#save_project_row').hide();
+            jQuery('#save_project_btn').hide();
+        }
+    });
+
+    // Show/hide save button based on checkbox state
+    jQuery('#save_project_checkbox').on('change', function() {
+        updateSaveButtonVisibility();
+    });
+
+    function updateSaveButtonVisibility() {
+        var isChecked = jQuery('#save_project_checkbox').is(':checked');
+        var hasVersion = jQuery('#version').val();
+
+        if(isChecked && hasVersion) {
             jQuery('#save_project_btn').show();
         } else {
             jQuery('#save_project_btn').hide();
         }
-    });
+    }
 
     function updatePreviewAndVersions() {
         previewRepo();
@@ -94,18 +112,21 @@ jQuery(document).ready(function() {
                         jQuery('#version_row').show();
                     } else {
                         jQuery('#version_row').hide();
+                        jQuery('#save_project_row').hide();
                         jQuery('#save_project_btn').hide();
                         console.error('Failed to fetch versions:', response.data);
                     }
                 },
                 error: function() {
                     jQuery('#version_row').hide();
+                    jQuery('#save_project_row').hide();
                     jQuery('#save_project_btn').hide();
                     console.error('An error occurred while fetching the repository versions.');
                 }
             });
         } else {
             jQuery('#version_row').hide();
+            jQuery('#save_project_row').hide();
             jQuery('#save_project_btn').hide();
         }
     }
