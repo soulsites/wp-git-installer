@@ -73,33 +73,79 @@ function github_plugin_installer_page() {
         $is_private = isset($_POST['is_private']) ? true : false;
         $access_token = $is_private ? sanitize_text_field($_POST['access_token']) : '';
         $selected_version = sanitize_text_field($_POST['version']);
+        $save_as_project = isset($_POST['save_as_project']) ? true : false;
+        $project_name = sanitize_text_field($_POST['project_name']);
 
+        // Install/Update the plugin
         install_update_github_plugin($repo_url, $access_token, $selected_version);
+
+        // Save as project if checkbox was checked
+        if ($save_as_project && !empty($project_name)) {
+            $project_data = array(
+                'name' => $project_name,
+                'repo_url' => $repo_url,
+                'is_private' => $is_private,
+                'access_token' => $access_token,
+                'version' => $selected_version
+            );
+            save_project($project_data);
+            echo '<div class="updated"><p>Projekt erfolgreich gespeichert!</p></div>';
+        }
     }
 
     $saved_projects = get_saved_projects();
 
     ?>
     <style>
-        .github-add-project-section {
+        .github-installer-container {
+            max-width: 1200px;
+        }
+        .github-card {
             background: #fff;
             border: 1px solid #c3c4c7;
             border-radius: 4px;
             padding: 20px;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 1px rgba(0,0,0,0.04);
         }
-        .github-save-project-btn {
-            background: #00a32a;
-            border-color: #00a32a;
-            color: #fff;
-            margin-left: 10px;
+        .github-card h2 {
+            margin-top: 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
         }
-        .github-save-project-btn:hover {
-            background: #008a20;
-            border-color: #008a20;
+        .form-section {
+            margin-bottom: 15px;
         }
-        .wp-list-table.github-projects-table {
+        .form-section label {
+            display: inline-block;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        .form-section input[type="text"],
+        .form-section input[type="password"],
+        .form-section select {
+            width: 100%;
+            max-width: 500px;
+        }
+        .form-section .description {
+            color: #646970;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: normal;
+        }
+        .checkbox-label input[type="checkbox"] {
+            margin: 0;
+        }
+        .button-group {
             margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
         }
         .github-sync-btn:disabled {
             opacity: 0.5;
@@ -113,10 +159,20 @@ function github_plugin_installer_page() {
             border-color: #b32d2e;
             color: #fff;
         }
+        .projects-table {
+            margin-top: 15px;
+        }
+        .projects-table td {
+            vertical-align: middle;
+        }
+        .project-actions {
+            white-space: nowrap;
+        }
         .github-sync-status {
             font-size: 12px;
             padding: 8px;
             border-radius: 3px;
+            margin-top: 8px;
             display: none;
         }
         .github-sync-status.success {
@@ -137,97 +193,128 @@ function github_plugin_installer_page() {
             border: 1px solid #2271b1;
             display: block;
         }
+        .info-box {
+            background: #f0f6fc;
+            border-left: 4px solid #2271b1;
+            padding: 12px;
+            margin-top: 15px;
+        }
+        .loading-indicator {
+            display: none;
+            color: #646970;
+            font-style: italic;
+        }
     </style>
-    <div class="wrap">
+    <div class="wrap github-installer-container">
         <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
 
-        <div class="github-add-project-section">
-            <h2>Neues Projekt hinzufügen</h2>
+        <!-- Installation/Update Form -->
+        <div class="github-card">
+            <h2>Plugin installieren oder aktualisieren</h2>
             <form method="post" action="" id="github-project-form">
-                <table class="form-table">
-                    <tr>
-                        <th scope="row"><label for="project_name">Projektname</label></th>
-                        <td><input type="text" id="project_name" name="project_name" class="regular-text" placeholder="Mein GitHub Plugin"></td>
-                    </tr>
-                    <tr>
-                        <th scope="row"><label for="repo_url">GitHub Repository URL</label></th>
-                        <td><input type="text" id="repo_url" name="repo_url" class="regular-text" required placeholder="https://github.com/username/repo.git"></td>
-                    </tr>
-                    <tr>
-                        <th scope="row"><label for="is_private">Privates Repository?</label></th>
-                        <td><input type="checkbox" id="is_private" name="is_private"></td>
-                    </tr>
-                    <tr id="access_token_row" style="display: none;">
-                        <th scope="row"><label for="access_token">GitHub Access Token</label></th>
-                        <td>
-                            <input type="password" id="access_token" name="access_token" class="regular-text">
-                            <p class="description">
-                                To generate a Personal Access Token, go to
-                                <a href="https://github.com/settings/tokens" target="_blank">GitHub Settings > Developer settings > Personal access tokens</a>.
-                                Create a new token with the 'repo' scope for private repositories.
-                            </p>
-                        </td>
-                    </tr>
-                    <tr id="version_row" style="display: none;">
-                        <th scope="row"><label for="version">Version</label></th>
-                        <td><select id="version" name="version"></select></td>
-                    </tr>
-                    <tr id="save_project_row" style="display: none;">
-                        <th scope="row"><label for="save_project_checkbox">Projekt speichern</label></th>
-                        <td>
-                            <input type="checkbox" id="save_project_checkbox" name="save_project_checkbox">
-                            <p class="description">Wenn aktiviert, wird das Projekt gespeichert und kann später aktualisiert werden.</p>
-                        </td>
-                    </tr>
-                </table>
+                <div class="form-section">
+                    <label for="repo_url">GitHub Repository URL *</label>
+                    <input type="text" id="repo_url" name="repo_url" class="regular-text" required placeholder="https://github.com/username/repository.git">
+                    <p class="description">Die vollständige URL zu Ihrem GitHub Repository</p>
+                </div>
+
+                <div class="form-section">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="is_private" name="is_private">
+                        <span>Privates Repository (benötigt Access Token)</span>
+                    </label>
+                </div>
+
+                <div class="form-section" id="access_token_section" style="display: none;">
+                    <label for="access_token">GitHub Access Token</label>
+                    <input type="password" id="access_token" name="access_token" class="regular-text">
+                    <p class="description">
+                        Token erstellen unter: <a href="https://github.com/settings/tokens" target="_blank">GitHub Settings → Personal access tokens</a>
+                    </p>
+                </div>
+
+                <div class="form-section" id="version_section" style="display: none;">
+                    <label for="version">Version / Tag auswählen</label>
+                    <select id="version" name="version" class="regular-text">
+                        <option value="">-- Bitte warten, lade Versionen... --</option>
+                    </select>
+                    <span class="loading-indicator" id="version-loading">Lade verfügbare Versionen...</span>
+                </div>
+
+                <div class="form-section">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="save_as_project" name="save_as_project">
+                        <span>Als Projekt speichern (für spätere Updates)</span>
+                    </label>
+                    <p class="description">Wenn aktiviert, können Sie dieses Plugin später einfach über die Projektliste aktualisieren</p>
+                </div>
+
+                <div class="form-section" id="project_name_section" style="display: none;">
+                    <label for="project_name">Projektname</label>
+                    <input type="text" id="project_name" name="project_name" class="regular-text" placeholder="z.B. Mein WordPress Plugin">
+                    <p class="description">Ein einprägsamer Name für dieses Projekt</p>
+                </div>
+
+                <div class="button-group">
+                    <?php submit_button('Installieren / Aktualisieren', 'primary large', 'install_update_plugin', false); ?>
+                </div>
+
                 <div id="plugin_status"></div>
-                <?php submit_button('Installieren/Aktualisieren', 'primary', 'install_update_plugin', false); ?>
-                <button type="button" id="save_project_btn" class="button github-save-project-btn" style="display:none;">Als Projekt speichern</button>
             </form>
-            <div id="repo_preview" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc; display: none;">
-                <h3>Repository Preview</h3>
-                <div id="repo_content"></div>
-            </div>
         </div>
 
+        <!-- Saved Projects -->
         <?php if (!empty($saved_projects)): ?>
+        <div class="github-card">
             <h2>Gespeicherte Projekte</h2>
-            <table class="wp-list-table widefat fixed striped">
+            <p class="description">Diese Projekte können mit einem Klick aktualisiert werden</p>
+
+            <table class="wp-list-table widefat fixed striped projects-table">
                 <thead>
                     <tr>
-                        <th>Projektname</th>
-                        <th>Repository</th>
-                        <th>Version</th>
-                        <th>Status</th>
-                        <th>Zuletzt synchronisiert</th>
-                        <th>Aktionen</th>
+                        <th style="width: 20%;">Projektname</th>
+                        <th style="width: 30%;">Repository</th>
+                        <th style="width: 12%;">Version</th>
+                        <th style="width: 10%;">Typ</th>
+                        <th style="width: 15%;">Letzte Aktualisierung</th>
+                        <th style="width: 13%;">Aktionen</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php foreach ($saved_projects as $project): ?>
                         <tr data-project-id="<?php echo esc_attr($project['id']); ?>">
                             <td><strong><?php echo esc_html($project['name']); ?></strong></td>
-                            <td><?php echo esc_html($project['repo_url']); ?></td>
+                            <td><code><?php echo esc_html($project['repo_url']); ?></code></td>
                             <td><?php echo esc_html($project['version']); ?></td>
-                            <td><?php echo $project['is_private'] ? 'Privat' : 'Öffentlich'; ?></td>
-                            <td><?php echo esc_html($project['last_synced']); ?></td>
                             <td>
-                                <button class="button button-primary github-sync-btn" data-project-id="<?php echo esc_attr($project['id']); ?>">
-                                    Aktualisieren
+                                <span class="<?php echo $project['is_private'] ? 'dashicons dashicons-lock' : 'dashicons dashicons-unlock'; ?>" title="<?php echo $project['is_private'] ? 'Privat' : 'Öffentlich'; ?>"></span>
+                                <?php echo $project['is_private'] ? 'Privat' : 'Öffentlich'; ?>
+                            </td>
+                            <td><?php echo esc_html(date('d.m.Y H:i', strtotime($project['last_synced']))); ?></td>
+                            <td class="project-actions">
+                                <button class="button button-small button-primary github-sync-btn" data-project-id="<?php echo esc_attr($project['id']); ?>" title="Projekt aktualisieren">
+                                    <span class="dashicons dashicons-update"></span> Update
                                 </button>
-                                <button class="button github-delete-btn" data-project-id="<?php echo esc_attr($project['id']); ?>">
-                                    Löschen
+                                <button class="button button-small github-delete-btn" data-project-id="<?php echo esc_attr($project['id']); ?>" title="Projekt löschen">
+                                    <span class="dashicons dashicons-trash"></span>
                                 </button>
-                                <div class="github-sync-status" data-project-id="<?php echo esc_attr($project['id']); ?>" style="margin-top: 5px;"></div>
+                            </td>
+                        </tr>
+                        <tr class="github-sync-status-row" data-project-id="<?php echo esc_attr($project['id']); ?>" style="display: none;">
+                            <td colspan="6">
+                                <div class="github-sync-status" data-project-id="<?php echo esc_attr($project['id']); ?>"></div>
                             </td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
+        </div>
         <?php else: ?>
-            <div class="notice notice-info">
-                <p>Keine gespeicherten Projekte vorhanden. Fügen Sie oben ein neues Projekt hinzu.</p>
+        <div class="github-card">
+            <div class="info-box">
+                <p><strong>💡 Tipp:</strong> Aktivieren Sie "Als Projekt speichern" beim Installieren eines Plugins, um es hier zur einfachen Verwaltung zu speichern.</p>
             </div>
+        </div>
         <?php endif; ?>
     </div>
     <?php

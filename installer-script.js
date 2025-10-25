@@ -1,192 +1,137 @@
-jQuery(document).ready(function() {
-    var previewTimer;
+jQuery(document).ready(function($) {
     var versionTimer;
 
-    jQuery('#is_private').change(function() {
+    // Show/hide access token field based on private checkbox
+    $('#is_private').change(function() {
         if(this.checked) {
-            jQuery('#access_token_row').show();
+            $('#access_token_section').slideDown();
         } else {
-            jQuery('#access_token_row').hide();
+            $('#access_token_section').slideUp();
+            $('#access_token').val('');
         }
-        updatePreviewAndVersions();
+        // Reload versions when private status changes
+        loadVersions();
     });
 
-    jQuery('#repo_url, #access_token').on('input', function() {
-        clearTimeout(previewTimer);
+    // Show/hide project name field based on save as project checkbox
+    $('#save_as_project').change(function() {
+        if(this.checked) {
+            $('#project_name_section').slideDown();
+            // Pre-fill project name from repo URL if empty
+            if(!$('#project_name').val()) {
+                var repoUrl = $('#repo_url').val();
+                if(repoUrl) {
+                    var repoName = repoUrl.split('/').pop().replace('.git', '');
+                    $('#project_name').val(repoName.charAt(0).toUpperCase() + repoName.slice(1));
+                }
+            }
+        } else {
+            $('#project_name_section').slideUp();
+        }
+    });
+
+    // Load versions when repo URL or access token changes
+    $('#repo_url, #access_token').on('input', function() {
         clearTimeout(versionTimer);
-        previewTimer = setTimeout(updatePreviewAndVersions, 500);
+        versionTimer = setTimeout(loadVersions, 800);
     });
 
-    // Show "Save as Project" checkbox row when version is selected
-    jQuery('#version').on('change', function() {
-        if(jQuery(this).val()) {
-            jQuery('#save_project_row').show();
-            updateSaveButtonVisibility();
-        } else {
-            jQuery('#save_project_row').hide();
-            jQuery('#save_project_btn').hide();
-        }
-    });
+    // Load versions function
+    function loadVersions() {
+        var repoUrl = $('#repo_url').val();
+        var isPrivate = $('#is_private').is(':checked');
+        var accessToken = $('#access_token').val();
 
-    // Show/hide save button based on checkbox state
-    jQuery('#save_project_checkbox').on('change', function() {
-        updateSaveButtonVisibility();
-    });
+        // Clear previous state
+        $('#version_section').hide();
+        $('#version').html('<option value="">-- Bitte warten, lade Versionen... --</option>');
 
-    function updateSaveButtonVisibility() {
-        var isChecked = jQuery('#save_project_checkbox').is(':checked');
-        var hasVersion = jQuery('#version').val();
-
-        if(isChecked && hasVersion) {
-            jQuery('#save_project_btn').show();
-        } else {
-            jQuery('#save_project_btn').hide();
-        }
-    }
-
-    function updatePreviewAndVersions() {
-        previewRepo();
-        getVersions();
-    }
-
-    function previewRepo() {
-        var repoUrl = jQuery('#repo_url').val();
-        var isPrivate = jQuery('#is_private').is(':checked');
-        var accessToken = jQuery('#access_token').val();
-
-        if (repoUrl) {
-            jQuery.ajax({
-                url: github_installer.ajax_url,
-                type: 'POST',
-                data: {
-                    action: 'preview_github_repo',
-                    nonce: github_installer.nonce,
-                    repo_url: repoUrl,
-                    is_private: isPrivate,
-                    access_token: accessToken
-                },
-                success: function(response) {
-                    if (response.success) {
-                        jQuery('#repo_content').html(response.data);
-                        jQuery('#repo_preview').show();
-                    } else {
-                        jQuery('#repo_content').html('<p style="color: red;">' + response.data + '</p>');
-                        jQuery('#repo_preview').show();
-                    }
-                },
-                error: function() {
-                    jQuery('#repo_content').html('<p style="color: red;">An error occurred while fetching the repository content.</p>');
-                    jQuery('#repo_preview').show();
-                }
-            });
-        } else {
-            jQuery('#repo_preview').hide();
-        }
-    }
-
-    function getVersions() {
-        var repoUrl = jQuery('#repo_url').val();
-        var isPrivate = jQuery('#is_private').is(':checked');
-        var accessToken = jQuery('#access_token').val();
-
-        if (repoUrl) {
-            jQuery.ajax({
-                url: github_installer.ajax_url,
-                type: 'POST',
-                data: {
-                    action: 'get_github_versions',
-                    nonce: github_installer.nonce,
-                    repo_url: repoUrl,
-                    is_private: isPrivate,
-                    access_token: accessToken
-                },
-                success: function(response) {
-                    if (response.success) {
-                        var versions = response.data;
-                        var versionSelect = jQuery('#version');
-                        versionSelect.empty();
-                        versionSelect.append(jQuery('<option></option>').attr('value', '').text('-- Wählen Sie eine Version --'));
-                        jQuery.each(versions, function(index, version) {
-                            versionSelect.append(jQuery('<option></option>').attr('value', version).text(version));
-                        });
-                        jQuery('#version_row').show();
-                    } else {
-                        jQuery('#version_row').hide();
-                        jQuery('#save_project_row').hide();
-                        jQuery('#save_project_btn').hide();
-                        console.error('Failed to fetch versions:', response.data);
-                    }
-                },
-                error: function() {
-                    jQuery('#version_row').hide();
-                    jQuery('#save_project_row').hide();
-                    jQuery('#save_project_btn').hide();
-                    console.error('An error occurred while fetching the repository versions.');
-                }
-            });
-        } else {
-            jQuery('#version_row').hide();
-            jQuery('#save_project_row').hide();
-            jQuery('#save_project_btn').hide();
-        }
-    }
-
-    // Save project button handler
-    jQuery('#save_project_btn').on('click', function(e) {
-        e.preventDefault();
-
-        var projectName = jQuery('#project_name').val();
-        var repoUrl = jQuery('#repo_url').val();
-        var isPrivate = jQuery('#is_private').is(':checked');
-        var accessToken = jQuery('#access_token').val();
-        var version = jQuery('#version').val();
-
-        if (!projectName) {
-            alert('Bitte geben Sie einen Projektnamen ein.');
+        if (!repoUrl || repoUrl.length < 10) {
             return;
         }
 
-        if (!repoUrl || !version) {
-            alert('Bitte füllen Sie alle erforderlichen Felder aus.');
-            return;
-        }
+        // Show loading
+        $('#version_section').slideDown();
+        $('#version-loading').show();
 
-        jQuery.ajax({
+        $.ajax({
             url: github_installer.ajax_url,
             type: 'POST',
             data: {
-                action: 'save_github_project',
+                action: 'get_github_versions',
                 nonce: github_installer.nonce,
-                name: projectName,
                 repo_url: repoUrl,
                 is_private: isPrivate,
-                access_token: accessToken,
-                version: version
+                access_token: accessToken
             },
             success: function(response) {
-                if (response.success) {
-                    alert(response.data.message);
-                    location.reload();
+                $('#version-loading').hide();
+
+                if (response.success && response.data.length > 0) {
+                    var versions = response.data;
+                    var versionSelect = $('#version');
+                    versionSelect.empty();
+                    versionSelect.append($('<option></option>').attr('value', '').text('-- Wählen Sie eine Version --'));
+                    $.each(versions, function(index, version) {
+                        versionSelect.append($('<option></option>').attr('value', version).text(version));
+                    });
+                    $('#version_section').slideDown();
                 } else {
-                    alert('Fehler: ' + response.data);
+                    $('#version').html('<option value="">Keine Versionen/Tags gefunden</option>');
+                    console.error('Keine Versionen gefunden:', response.data);
                 }
             },
-            error: function() {
-                alert('Ein Fehler ist beim Speichern des Projekts aufgetreten.');
+            error: function(xhr, status, error) {
+                $('#version-loading').hide();
+                $('#version').html('<option value="">Fehler beim Laden der Versionen</option>');
+                console.error('Fehler beim Laden der Versionen:', error);
             }
         });
+    }
+
+    // Form validation before submit
+    $('#github-project-form').on('submit', function(e) {
+        var saveAsProject = $('#save_as_project').is(':checked');
+        var projectName = $('#project_name').val();
+        var repoUrl = $('#repo_url').val();
+        var version = $('#version').val();
+
+        // Check if save as project is checked but no project name
+        if (saveAsProject && !projectName) {
+            e.preventDefault();
+            alert('Bitte geben Sie einen Projektnamen ein oder deaktivieren Sie "Als Projekt speichern".');
+            $('#project_name').focus();
+            return false;
+        }
+
+        // Check if repo URL is provided
+        if (!repoUrl) {
+            e.preventDefault();
+            alert('Bitte geben Sie eine GitHub Repository URL ein.');
+            $('#repo_url').focus();
+            return false;
+        }
+
+        // Warning if no version selected
+        if (!version) {
+            return confirm('Sie haben keine Version ausgewählt. Es wird die neueste Version vom Hauptbranch verwendet. Fortfahren?');
+        }
+
+        return true;
     });
 
     // Sync project button handler
-    jQuery(document).on('click', '.github-sync-btn', function() {
-        var projectId = jQuery(this).data('project-id');
-        var button = jQuery(this);
-        var statusDiv = jQuery('.github-sync-status[data-project-id="' + projectId + '"]');
+    $(document).on('click', '.github-sync-btn', function() {
+        var projectId = $(this).data('project-id');
+        var button = $(this);
+        var statusRow = $('.github-sync-status-row[data-project-id="' + projectId + '"]');
+        var statusDiv = $('.github-sync-status[data-project-id="' + projectId + '"]');
 
-        button.prop('disabled', true);
+        button.prop('disabled', true).html('<span class="dashicons dashicons-update"></span> Lädt...');
+        statusRow.show();
         statusDiv.removeClass('success error').addClass('loading').text('Synchronisierung läuft...').show();
 
-        jQuery.ajax({
+        $.ajax({
             url: github_installer.ajax_url,
             type: 'POST',
             data: {
@@ -195,32 +140,35 @@ jQuery(document).ready(function() {
                 project_id: projectId
             },
             success: function(response) {
-                button.prop('disabled', false);
+                button.prop('disabled', false).html('<span class="dashicons dashicons-update"></span> Update');
                 if (response.success) {
-                    statusDiv.removeClass('loading error').addClass('success').text(response.data);
+                    statusDiv.removeClass('loading error').addClass('success').html('✓ ' + response.data);
                     setTimeout(function() {
                         location.reload();
                     }, 1500);
                 } else {
-                    statusDiv.removeClass('loading success').addClass('error').text('Fehler: ' + response.data);
+                    statusDiv.removeClass('loading success').addClass('error').html('✗ Fehler: ' + response.data);
                 }
             },
             error: function() {
-                button.prop('disabled', false);
-                statusDiv.removeClass('loading success').addClass('error').text('Ein Fehler ist aufgetreten.');
+                button.prop('disabled', false).html('<span class="dashicons dashicons-update"></span> Update');
+                statusDiv.removeClass('loading success').addClass('error').html('✗ Ein Fehler ist aufgetreten.');
             }
         });
     });
 
     // Delete project button handler
-    jQuery(document).on('click', '.github-delete-btn', function() {
-        var projectId = jQuery(this).data('project-id');
+    $(document).on('click', '.github-delete-btn', function() {
+        var projectId = $(this).data('project-id');
 
-        if (!confirm('Möchten Sie dieses Projekt wirklich löschen?')) {
+        if (!confirm('Möchten Sie dieses Projekt wirklich löschen?\n\nDas Plugin selbst wird nicht deinstalliert, nur die Projektverwaltung wird entfernt.')) {
             return;
         }
 
-        jQuery.ajax({
+        var button = $(this);
+        button.prop('disabled', true);
+
+        $.ajax({
             url: github_installer.ajax_url,
             type: 'POST',
             data: {
@@ -230,14 +178,18 @@ jQuery(document).ready(function() {
             },
             success: function(response) {
                 if (response.success) {
-                    alert(response.data);
-                    location.reload();
+                    // Fade out the row and reload
+                    $('tr[data-project-id="' + projectId + '"]').fadeOut(300, function() {
+                        location.reload();
+                    });
                 } else {
-                    alert('Fehler: ' + response.data);
+                    alert('Fehler beim Löschen: ' + response.data);
+                    button.prop('disabled', false);
                 }
             },
             error: function() {
                 alert('Ein Fehler ist beim Löschen des Projekts aufgetreten.');
+                button.prop('disabled', false);
             }
         });
     });
