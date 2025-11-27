@@ -342,7 +342,8 @@ function install_update_github_plugin($repo_url, $access_token, $selected_versio
 
         // Validate version before checkout
         if (!empty($selected_version)) {
-            $update_command = "cd " . escapeshellarg($plugin_dir) . " && git fetch --all && git reset --hard && git clean -fd && git checkout " . escapeshellarg($selected_version) . " 2>&1";
+            // Fetch all refs, discard local changes, and checkout specific version
+            $update_command = "cd " . escapeshellarg($plugin_dir) . " && git fetch --all --tags && git checkout -f " . escapeshellarg($selected_version) . " && git clean -fd 2>&1";
             exec($update_command, $output, $return_var);
 
             if ($return_var !== 0) {
@@ -354,8 +355,14 @@ function install_update_github_plugin($repo_url, $access_token, $selected_versio
                 wp_die('Failed to update the plugin. Error: ' . implode("\n", $output));
             }
         } else {
-            // If no version specified, just fetch and reset to remote branch (overwrites local changes)
-            $update_command = "cd " . escapeshellarg($plugin_dir) . " && git fetch origin && git reset --hard @{u} && git clean -fd 2>&1";
+            // If no version specified, get default branch and pull latest changes
+            $branch_command = "cd " . escapeshellarg($plugin_dir) . " && git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@'";
+            exec($branch_command, $branch_output, $branch_return);
+
+            $default_branch = !empty($branch_output) ? trim($branch_output[0]) : 'main';
+
+            // Fetch and checkout default branch, overwriting local changes
+            $update_command = "cd " . escapeshellarg($plugin_dir) . " && git fetch origin && git checkout -f " . escapeshellarg($default_branch) . " && git reset --hard origin/" . escapeshellarg($default_branch) . " && git clean -fd 2>&1";
             exec($update_command, $output, $return_var);
 
             if ($return_var !== 0) {
@@ -633,7 +640,8 @@ function sync_github_project() {
 
         // Update existing plugin - validate version before checkout
         if (!empty($version)) {
-            $update_command = "cd " . escapeshellarg($plugin_dir) . " && git fetch --all && git reset --hard && git clean -fd && git checkout " . escapeshellarg($version) . " 2>&1";
+            // Fetch all refs, discard local changes, and checkout specific version
+            $update_command = "cd " . escapeshellarg($plugin_dir) . " && git fetch --all --tags && git checkout -f " . escapeshellarg($version) . " && git clean -fd 2>&1";
             exec($update_command, $output, $return_var);
 
             if ($return_var !== 0) {
@@ -645,8 +653,15 @@ function sync_github_project() {
                 wp_send_json_error('Synchronisierung fehlgeschlagen: ' . implode("\n", $output));
             }
         } else {
-            // If no version specified, just fetch and reset to remote branch (overwrites local changes)
-            $update_command = "cd " . escapeshellarg($plugin_dir) . " && git fetch origin && git reset --hard @{u} && git clean -fd 2>&1";
+            // If no version specified, get current branch and pull latest changes
+            // First, try to determine the default branch
+            $branch_command = "cd " . escapeshellarg($plugin_dir) . " && git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@'";
+            exec($branch_command, $branch_output, $branch_return);
+
+            $default_branch = !empty($branch_output) ? trim($branch_output[0]) : 'main';
+
+            // Fetch and checkout default branch, overwriting local changes
+            $update_command = "cd " . escapeshellarg($plugin_dir) . " && git fetch origin && git checkout -f " . escapeshellarg($default_branch) . " && git reset --hard origin/" . escapeshellarg($default_branch) . " && git clean -fd 2>&1";
             exec($update_command, $output, $return_var);
 
             if ($return_var !== 0) {
