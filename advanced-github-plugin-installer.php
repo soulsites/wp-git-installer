@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: GitHub Plugin Installer
- * Description: Install or update WordPress plugins directly from GitHub repositories with multi-project support
- * Version: 2.0
+ * Description: Install or update WordPress plugins directly from GitHub repositories with multi-project support and modern Material Design 3 UI
+ * Version: 2.1
  * Author: Christian Wedel
  */
 
@@ -15,6 +15,8 @@ add_action('wp_ajax_check_plugin_status', 'check_plugin_status');
 add_action('wp_ajax_save_github_project', 'save_github_project');
 add_action('wp_ajax_delete_github_project', 'delete_github_project');
 add_action('wp_ajax_sync_github_project', 'sync_github_project');
+add_action('wp_ajax_update_github_project', 'update_github_project');
+add_action('wp_ajax_get_github_project', 'get_github_project');
 
 function github_plugin_installer_menu() {
     add_plugins_page('GitHub Plugin Installer', 'GitHub Installer', 'manage_options', 'github-plugin-installer', 'github_plugin_installer_page');
@@ -24,7 +26,8 @@ function github_plugin_installer_scripts($hook) {
     if ($hook != 'plugins_page_github-plugin-installer') {
         return;
     }
-    wp_enqueue_script('github-plugin-installer', plugin_dir_url(__FILE__) . 'installer-script.js', array('jquery'), '1.3', true);
+    wp_enqueue_style('github-plugin-installer-admin', plugin_dir_url(__FILE__) . 'admin.css', array(), '2.0');
+    wp_enqueue_script('github-plugin-installer', plugin_dir_url(__FILE__) . 'installer-script.js', array('jquery'), '2.0', true);
     wp_localize_script('github-plugin-installer', 'github_installer', array(
         'ajax_url' => admin_url('admin-ajax.php'),
         'nonce' => wp_create_nonce('github_installer_nonce')
@@ -96,115 +99,6 @@ function github_plugin_installer_page() {
     $saved_projects = get_saved_projects();
 
     ?>
-    <style>
-        .github-installer-container {
-            max-width: 1200px;
-        }
-        .github-card {
-            background: #fff;
-            border: 1px solid #c3c4c7;
-            border-radius: 4px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 1px 1px rgba(0,0,0,0.04);
-        }
-        .github-card h2 {
-            margin-top: 0;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #e0e0e0;
-        }
-        .form-section {
-            margin-bottom: 15px;
-        }
-        .form-section label {
-            display: inline-block;
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-        .form-section input[type="text"],
-        .form-section input[type="password"],
-        .form-section select {
-            width: 100%;
-            max-width: 500px;
-        }
-        .form-section .description {
-            color: #646970;
-            font-size: 13px;
-            margin-top: 5px;
-        }
-        .checkbox-label {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: normal;
-        }
-        .checkbox-label input[type="checkbox"] {
-            margin: 0;
-        }
-        .button-group {
-            margin-top: 20px;
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-        .github-sync-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        .github-delete-btn {
-            color: #b32d2e;
-        }
-        .github-delete-btn:hover {
-            background: #b32d2e;
-            border-color: #b32d2e;
-            color: #fff;
-        }
-        .projects-table {
-            margin-top: 15px;
-        }
-        .projects-table td {
-            vertical-align: middle;
-        }
-        .project-actions {
-            white-space: nowrap;
-        }
-        .github-sync-status {
-            font-size: 12px;
-            padding: 8px;
-            border-radius: 3px;
-            margin-top: 8px;
-            display: none;
-        }
-        .github-sync-status.success {
-            background: #d7f0db;
-            color: #00631e;
-            border: 1px solid #00631e;
-            display: block;
-        }
-        .github-sync-status.error {
-            background: #fcf0f1;
-            color: #b32d2e;
-            border: 1px solid #b32d2e;
-            display: block;
-        }
-        .github-sync-status.loading {
-            background: #f0f6fc;
-            color: #1d2327;
-            border: 1px solid #2271b1;
-            display: block;
-        }
-        .info-box {
-            background: #f0f6fc;
-            border-left: 4px solid #2271b1;
-            padding: 12px;
-            margin-top: 15px;
-        }
-        .loading-indicator {
-            display: none;
-            color: #646970;
-            font-style: italic;
-        }
-    </style>
     <div class="wrap github-installer-container">
         <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
 
@@ -292,8 +186,11 @@ function github_plugin_installer_page() {
                             </td>
                             <td><?php echo esc_html(date('d.m.Y H:i', strtotime($project['last_synced']))); ?></td>
                             <td class="project-actions">
+                                <button class="button button-small github-edit-btn" data-project-id="<?php echo esc_attr($project['id']); ?>" title="Projekt bearbeiten">
+                                    <span class="dashicons dashicons-edit"></span>
+                                </button>
                                 <button class="button button-small button-primary github-sync-btn" data-project-id="<?php echo esc_attr($project['id']); ?>" title="Projekt aktualisieren">
-                                    <span class="dashicons dashicons-update"></span> Update
+                                    <span class="dashicons dashicons-update"></span>
                                 </button>
                                 <button class="button button-small github-delete-btn" data-project-id="<?php echo esc_attr($project['id']); ?>" title="Projekt löschen">
                                     <span class="dashicons dashicons-trash"></span>
@@ -316,6 +213,66 @@ function github_plugin_installer_page() {
             </div>
         </div>
         <?php endif; ?>
+
+        <!-- Edit Project Modal -->
+        <div id="edit-project-modal" class="github-modal" style="display: none;">
+            <div class="github-modal-overlay"></div>
+            <div class="github-modal-content">
+                <div class="github-modal-header">
+                    <h2>Projekt bearbeiten</h2>
+                    <button class="github-modal-close" title="Schließen">
+                        <span class="dashicons dashicons-no-alt"></span>
+                    </button>
+                </div>
+                <div class="github-modal-body">
+                    <form id="edit-project-form">
+                        <input type="hidden" id="edit_project_id" name="project_id">
+
+                        <div class="form-section">
+                            <label for="edit_project_name">Projektname *</label>
+                            <input type="text" id="edit_project_name" name="name" class="regular-text" required>
+                        </div>
+
+                        <div class="form-section">
+                            <label for="edit_repo_url">GitHub Repository URL *</label>
+                            <input type="text" id="edit_repo_url" name="repo_url" class="regular-text" required>
+                            <p class="description">Die vollständige URL zu Ihrem GitHub Repository</p>
+                        </div>
+
+                        <div class="form-section">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="edit_is_private" name="is_private">
+                                <span>Privates Repository (benötigt Access Token)</span>
+                            </label>
+                        </div>
+
+                        <div class="form-section" id="edit_access_token_section" style="display: none;">
+                            <label for="edit_access_token">GitHub Access Token</label>
+                            <input type="password" id="edit_access_token" name="access_token" class="regular-text" placeholder="Token eingeben oder leer lassen, um das bestehende zu behalten">
+                            <p class="description">
+                                Leer lassen, um das bestehende Token zu behalten. Token erstellen unter:
+                                <a href="https://github.com/settings/tokens" target="_blank">GitHub Settings → Personal access tokens</a>
+                            </p>
+                        </div>
+
+                        <div class="form-section" id="edit_version_section">
+                            <label for="edit_version">Version / Tag auswählen</label>
+                            <select id="edit_version" name="version" class="regular-text">
+                                <option value="">-- Bitte warten, lade Versionen... --</option>
+                            </select>
+                            <span class="loading-indicator" id="edit-version-loading">Lade verfügbare Versionen...</span>
+                        </div>
+
+                        <div class="github-modal-footer">
+                            <button type="button" class="button github-modal-close">Abbrechen</button>
+                            <button type="submit" class="button button-primary" id="save-project-btn">
+                                <span class="dashicons dashicons-yes"></span> Änderungen speichern
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
     <?php
 }
@@ -689,4 +646,64 @@ function sync_github_project() {
     } catch (Exception $e) {
         wp_send_json_error('Fehler bei der Synchronisierung: ' . $e->getMessage());
     }
+}
+
+function get_github_project() {
+    check_ajax_referer('github_installer_nonce', 'nonce');
+
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error('Insufficient permissions.');
+    }
+
+    $project_id = sanitize_text_field($_POST['project_id']);
+    $projects = get_saved_projects();
+
+    if (!isset($projects[$project_id])) {
+        wp_send_json_error('Projekt nicht gefunden.');
+    }
+
+    wp_send_json_success($projects[$project_id]);
+}
+
+function update_github_project() {
+    check_ajax_referer('github_installer_nonce', 'nonce');
+
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error('Insufficient permissions.');
+    }
+
+    $project_id = sanitize_text_field($_POST['project_id']);
+    $projects = get_saved_projects();
+
+    if (!isset($projects[$project_id])) {
+        wp_send_json_error('Projekt nicht gefunden.');
+    }
+
+    // Get updated project data
+    $updated_data = array(
+        'id' => $project_id,
+        'name' => sanitize_text_field($_POST['name']),
+        'repo_url' => esc_url_raw($_POST['repo_url']),
+        'is_private' => !empty($_POST['is_private']) && $_POST['is_private'] !== 'false' && $_POST['is_private'] !== '0',
+        'version' => sanitize_text_field($_POST['version']),
+        'last_synced' => $projects[$project_id]['last_synced'] // Keep the existing last_synced time
+    );
+
+    // Handle access token - only update if a new one is provided
+    if (!empty($_POST['access_token'])) {
+        $updated_data['access_token'] = sanitize_text_field($_POST['access_token']);
+    } else {
+        $updated_data['access_token'] = $projects[$project_id]['access_token'];
+    }
+
+    // Validate required fields
+    if (empty($updated_data['name']) || empty($updated_data['repo_url'])) {
+        wp_send_json_error('Name und Repository URL sind erforderlich.');
+    }
+
+    // Update the project
+    $projects[$project_id] = $updated_data;
+    update_option('github_installer_projects', $projects);
+
+    wp_send_json_success(array('message' => 'Projekt erfolgreich aktualisiert!', 'project' => $updated_data));
 }
