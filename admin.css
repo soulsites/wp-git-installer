@@ -5,42 +5,44 @@
 
 :root {
     /* Main Violet Color Palette */
-    --primary-violet: #7c3aed;
-    --primary-violet-light: #a78bfa;
-    --primary-violet-dark: #5b21b6;
-    --primary-violet-ultra-light: #ddd6fe;
+    --primary-violet: #9333ea;
+    --primary-violet-light: #c084fc;
+    --primary-violet-dark: #6b21a8;
+    --primary-violet-ultra-light: #a855f7;
+    --primary-violet-darker: #581c87;
 
-    /* Glow Colors */
-    --glow-violet: rgba(124, 58, 237, 0.4);
-    --glow-violet-strong: rgba(124, 58, 237, 0.6);
-    --glow-violet-soft: rgba(124, 58, 237, 0.2);
+    /* Glow Colors - Consistent and Strong */
+    --glow-violet: rgba(147, 51, 234, 0.5);
+    --glow-violet-strong: rgba(147, 51, 234, 0.7);
+    --glow-violet-soft: rgba(147, 51, 234, 0.25);
 
     /* Complementary Colors */
     --success-green: #10b981;
     --error-red: #ef4444;
     --warning-amber: #f59e0b;
 
-    /* Surface Colors */
-    --surface-bg: #ffffff;
-    --surface-elevation-1: #faf9fc;
-    --surface-elevation-2: #f5f3f7;
-    --surface-elevation-3: #ebe8f0;
+    /* Dark Surface Colors */
+    --surface-bg: #0f0f1e;
+    --surface-elevation-1: #1a1a2e;
+    --surface-elevation-2: #242438;
+    --surface-elevation-3: #2e2e48;
 
-    /* Text Colors */
-    --text-primary: #1f2937;
-    --text-secondary: #6b7280;
+    /* Dark Text Colors */
+    --text-primary: #e5e7eb;
+    --text-secondary: #9ca3af;
     --text-on-primary: #ffffff;
 
     /* Border & Shadow */
-    --border-color: #e5e7eb;
+    --border-color: #374151;
+    --border-glow: rgba(147, 51, 234, 0.3);
     --border-radius-sm: 8px;
     --border-radius-md: 12px;
     --border-radius-lg: 16px;
 
-    /* Transitions */
-    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+    /* Transitions - Smooth and Gentle */
+    --transition-fast: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-normal: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ========================================
@@ -64,14 +66,14 @@
 }
 
 .github-card {
-    background: var(--surface-bg);
-    border: 1px solid var(--border-color);
+    background: linear-gradient(145deg, var(--surface-bg), var(--surface-elevation-1));
+    border: 2px solid var(--border-color);
     border-radius: var(--border-radius-md);
     padding: 24px;
     margin-bottom: 24px;
     box-shadow:
-        0 1px 3px rgba(0, 0, 0, 0.05),
-        0 1px 2px rgba(0, 0, 0, 0.06);
+        0 4px 12px rgba(0, 0, 0, 0.4),
+        0 0 30px var(--glow-violet-soft);
     transition: all var(--transition-normal);
     position: relative;
     overflow: hidden;
@@ -84,20 +86,17 @@
     left: 0;
     width: 100%;
     height: 3px;
-    background: linear-gradient(90deg, var(--primary-violet), var(--primary-violet-light));
-    opacity: 0;
-    transition: opacity var(--transition-normal);
-}
-
-.github-card:hover::before {
-    opacity: 1;
+    background: linear-gradient(90deg, var(--primary-violet), var(--primary-violet-light), var(--primary-violet));
+    box-shadow: 0 0 20px var(--glow-violet);
+    transition: all var(--transition-normal);
 }
 
 .github-card:hover {
+    border-color: var(--border-glow);
     box-shadow:
-        0 4px 6px rgba(124, 58, 237, 0.1),
-        0 2px 4px rgba(124, 58, 237, 0.06),
-        0 0 20px var(--glow-violet-soft);
+        0 8px 24px rgba(0, 0, 0, 0.5),
+        0 0 40px var(--glow-violet),
+        inset 0 0 60px var(--glow-violet-soft);
     transform: translateY(-2px);
 }
 
@@ -136,8 +135,9 @@
     border: 2px solid var(--border-color);
     border-radius: var(--border-radius-sm);
     font-size: 14px;
-    transition: all var(--transition-fast);
-    background: var(--surface-bg);
+    transition: all var(--transition-normal);
+    background: var(--surface-elevation-1);
+    color: var(--text-primary);
 }
 
 .form-section input[type="text"]:focus,
@@ -146,9 +146,9 @@
     outline: none;
     border-color: var(--primary-violet);
     box-shadow:
-        0 0 0 3px var(--glow-violet-soft),
-        0 0 12px var(--glow-violet);
-    background: var(--surface-bg);
+        0 0 0 4px var(--glow-violet-soft),
+        0 0 20px var(--glow-violet);
+    background: var(--surface-elevation-2);
 }
 
 .form-section .description {
@@ -188,32 +188,38 @@
 .button {
     border-radius: var(--border-radius-sm);
     font-weight: 500;
-    transition: all var(--transition-fast);
+    transition: all var(--transition-normal);
     border: 2px solid transparent;
     display: inline-flex;
     align-items: center;
     gap: 6px;
     cursor: pointer;
+    position: relative;
+    overflow: hidden;
 }
 
 .button-primary {
     background: linear-gradient(135deg, var(--primary-violet), var(--primary-violet-dark));
     border-color: var(--primary-violet);
     color: var(--text-on-primary);
-    box-shadow: 0 2px 4px var(--glow-violet-soft);
+    box-shadow:
+        0 4px 12px var(--glow-violet-soft),
+        0 0 20px var(--glow-violet-soft);
 }
 
 .button-primary:hover {
-    background: linear-gradient(135deg, var(--primary-violet-dark), var(--primary-violet));
+    background: linear-gradient(135deg, var(--primary-violet-light), var(--primary-violet));
     box-shadow:
-        0 4px 8px var(--glow-violet),
-        0 0 16px var(--glow-violet-soft);
-    transform: translateY(-1px);
+        0 6px 20px var(--glow-violet),
+        0 0 30px var(--glow-violet-soft);
+    transform: translateY(-2px);
 }
 
 .button-primary:active {
     transform: translateY(0);
-    box-shadow: 0 1px 2px var(--glow-violet-soft);
+    box-shadow:
+        0 2px 8px var(--glow-violet-soft),
+        0 0 15px var(--glow-violet-soft);
 }
 
 .button-small {
@@ -227,23 +233,31 @@
 }
 
 .github-edit-btn {
-    background: linear-gradient(135deg, var(--primary-violet-light), var(--primary-violet));
-    border-color: var(--primary-violet-light);
+    background: linear-gradient(135deg, var(--primary-violet-ultra-light), var(--primary-violet));
+    border-color: var(--primary-violet);
     color: var(--text-on-primary);
-    box-shadow: 0 2px 4px var(--glow-violet-soft);
+    box-shadow:
+        0 4px 12px var(--glow-violet-soft),
+        0 0 20px var(--glow-violet-soft);
 }
 
 .github-edit-btn:hover {
     background: linear-gradient(135deg, var(--primary-violet), var(--primary-violet-dark));
     box-shadow:
-        0 4px 8px var(--glow-violet),
-        0 0 16px var(--glow-violet-soft);
-    transform: translateY(-1px);
+        0 6px 20px var(--glow-violet),
+        0 0 30px var(--glow-violet-soft);
+    transform: translateY(-2px) scale(1.02);
 }
 
 .github-sync-btn {
     position: relative;
     overflow: hidden;
+    background: linear-gradient(135deg, var(--primary-violet), var(--primary-violet-dark));
+    border-color: var(--primary-violet);
+    color: var(--text-on-primary);
+    box-shadow:
+        0 4px 12px var(--glow-violet-soft),
+        0 0 20px var(--glow-violet-soft);
 }
 
 .github-sync-btn::before {
@@ -254,34 +268,50 @@
     width: 0;
     height: 0;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.15);
     transform: translate(-50%, -50%);
-    transition: width var(--transition-normal), height var(--transition-normal);
+    transition: all var(--transition-slow);
+    opacity: 0;
+}
+
+.github-sync-btn:hover {
+    background: linear-gradient(135deg, var(--primary-violet-light), var(--primary-violet));
+    box-shadow:
+        0 6px 20px var(--glow-violet),
+        0 0 30px var(--glow-violet-soft);
+    transform: translateY(-2px);
 }
 
 .github-sync-btn:hover::before {
     width: 300px;
     height: 300px;
+    opacity: 1;
 }
 
 .github-sync-btn:disabled {
-    opacity: 0.6;
+    opacity: 0.5;
     cursor: not-allowed;
     transform: none;
+    filter: grayscale(0.3);
 }
 
 .github-delete-btn {
+    background: linear-gradient(135deg, var(--surface-elevation-2), var(--surface-elevation-3));
+    border-color: var(--error-red);
     color: var(--error-red);
-    border-color: var(--border-color);
-    background: var(--surface-bg);
+    box-shadow:
+        0 4px 12px rgba(239, 68, 68, 0.2),
+        0 0 20px rgba(239, 68, 68, 0.1);
 }
 
 .github-delete-btn:hover {
-    background: var(--error-red);
+    background: linear-gradient(135deg, var(--error-red), #dc2626);
     border-color: var(--error-red);
     color: var(--text-on-primary);
-    box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
-    transform: translateY(-1px);
+    box-shadow:
+        0 6px 20px rgba(239, 68, 68, 0.5),
+        0 0 30px rgba(239, 68, 68, 0.3);
+    transform: translateY(-2px);
 }
 
 .button-group {
@@ -300,12 +330,16 @@
     margin-top: 20px;
     border-radius: var(--border-radius-sm);
     overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.4),
+        0 0 30px var(--glow-violet-soft);
+    border: 2px solid var(--border-color);
 }
 
 .projects-table thead {
-    background: linear-gradient(135deg, var(--primary-violet), var(--primary-violet-dark));
+    background: linear-gradient(135deg, var(--primary-violet), var(--primary-violet-dark), var(--primary-violet-darker));
     color: var(--text-on-primary);
+    box-shadow: 0 4px 20px var(--glow-violet);
 }
 
 .projects-table thead th {
@@ -316,27 +350,33 @@
 }
 
 .projects-table tbody tr {
-    transition: all var(--transition-fast);
-    border-bottom: 1px solid var(--border-color);
+    transition: all var(--transition-normal);
+    border-bottom: 2px solid var(--border-color);
+    background: var(--surface-elevation-1);
 }
 
 .projects-table tbody tr:hover {
-    background: var(--surface-elevation-1);
-    box-shadow: inset 3px 0 0 var(--primary-violet);
+    background: linear-gradient(90deg, var(--surface-elevation-2), var(--surface-elevation-1));
+    box-shadow:
+        inset 4px 0 0 var(--primary-violet),
+        0 0 20px var(--glow-violet-soft);
+    transform: translateX(4px);
 }
 
 .projects-table td {
     padding: 14px 12px;
     vertical-align: middle;
+    color: var(--text-primary);
 }
 
 .projects-table td code {
-    background: var(--surface-elevation-2);
+    background: linear-gradient(135deg, var(--surface-elevation-3), var(--surface-elevation-2));
     padding: 4px 8px;
     border-radius: 4px;
     font-size: 12px;
-    color: var(--primary-violet-dark);
-    border: 1px solid var(--primary-violet-ultra-light);
+    color: var(--primary-violet-light);
+    border: 1px solid var(--primary-violet);
+    box-shadow: 0 0 10px var(--glow-violet-soft);
 }
 
 .project-actions {
@@ -357,8 +397,9 @@
     margin-top: 12px;
     display: none;
     font-weight: 500;
+    border: 2px solid;
     border-left: 4px solid;
-    animation: slideDown var(--transition-normal) ease-out;
+    animation: slideDown var(--transition-slow) ease-out;
 }
 
 @keyframes slideDown {
@@ -373,27 +414,33 @@
 }
 
 .github-sync-status.success {
-    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
-    color: #065f46;
+    background: linear-gradient(135deg, #064e3b, #065f46);
+    color: #d1fae5;
     border-color: var(--success-green);
     display: block;
-    box-shadow: 0 0 12px rgba(16, 185, 129, 0.2);
+    box-shadow:
+        0 4px 12px rgba(16, 185, 129, 0.4),
+        0 0 30px rgba(16, 185, 129, 0.3);
 }
 
 .github-sync-status.error {
-    background: linear-gradient(135deg, #fee2e2, #fecaca);
-    color: #991b1b;
+    background: linear-gradient(135deg, #7f1d1d, #991b1b);
+    color: #fee2e2;
     border-color: var(--error-red);
     display: block;
-    box-shadow: 0 0 12px rgba(239, 68, 68, 0.2);
+    box-shadow:
+        0 4px 12px rgba(239, 68, 68, 0.4),
+        0 0 30px rgba(239, 68, 68, 0.3);
 }
 
 .github-sync-status.loading {
-    background: linear-gradient(135deg, var(--primary-violet-ultra-light), #e9d5ff);
-    color: var(--primary-violet-dark);
+    background: linear-gradient(135deg, var(--primary-violet-dark), var(--primary-violet));
+    color: var(--text-on-primary);
     border-color: var(--primary-violet);
     display: block;
-    box-shadow: 0 0 12px var(--glow-violet-soft);
+    box-shadow:
+        0 4px 12px var(--glow-violet),
+        0 0 30px var(--glow-violet-soft);
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
@@ -411,12 +458,15 @@
    ======================================== */
 
 .info-box {
-    background: linear-gradient(135deg, var(--primary-violet-ultra-light), #f3e8ff);
+    background: linear-gradient(135deg, var(--surface-elevation-2), var(--surface-elevation-3));
+    border: 2px solid var(--primary-violet);
     border-left: 4px solid var(--primary-violet);
     padding: 16px;
     margin-top: 20px;
     border-radius: var(--border-radius-sm);
-    box-shadow: 0 0 12px var(--glow-violet-soft);
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.4),
+        0 0 30px var(--glow-violet-soft);
 }
 
 .info-box p {
@@ -426,7 +476,8 @@
 }
 
 .info-box strong {
-    color: var(--primary-violet-dark);
+    color: var(--primary-violet-light);
+    text-shadow: 0 0 10px var(--glow-violet-soft);
 }
 
 /* ========================================
@@ -482,25 +533,25 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px);
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(8px);
     cursor: pointer;
 }
 
 .github-modal-content {
     position: relative;
-    background: var(--surface-bg);
+    background: linear-gradient(145deg, var(--surface-elevation-1), var(--surface-bg));
     border-radius: var(--border-radius-lg);
     max-width: 600px;
     width: 90%;
     max-height: 85vh;
     overflow-y: auto;
     box-shadow:
-        0 20px 25px -5px rgba(124, 58, 237, 0.3),
-        0 10px 10px -5px rgba(124, 58, 237, 0.2),
-        0 0 60px var(--glow-violet);
+        0 25px 50px rgba(0, 0, 0, 0.6),
+        0 0 80px var(--glow-violet),
+        inset 0 0 40px var(--glow-violet-soft);
     animation: modalSlideUp var(--transition-slow) cubic-bezier(0.34, 1.56, 0.64, 1);
-    border: 1px solid var(--primary-violet-ultra-light);
+    border: 2px solid var(--primary-violet);
 }
 
 @keyframes modalSlideUp {
@@ -516,11 +567,12 @@
 
 .github-modal-header {
     padding: 24px;
-    border-bottom: 2px solid var(--surface-elevation-3);
+    border-bottom: 2px solid var(--border-color);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: linear-gradient(135deg, var(--surface-bg), var(--surface-elevation-1));
+    background: linear-gradient(135deg, var(--surface-elevation-2), var(--surface-elevation-1));
+    box-shadow: 0 4px 20px var(--glow-violet-soft);
 }
 
 .github-modal-header h2 {
@@ -530,25 +582,30 @@
     font-size: 22px;
     font-weight: 600;
     color: var(--text-primary);
+    text-shadow: 0 0 20px var(--glow-violet-soft);
 }
 
 .github-modal-close {
-    background: none;
-    border: none;
+    background: var(--surface-elevation-3);
+    border: 2px solid var(--border-color);
     cursor: pointer;
-    padding: 6px;
+    padding: 8px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all var(--transition-fast);
+    transition: all var(--transition-normal);
     color: var(--text-secondary);
 }
 
 .github-modal-close:hover {
-    background: var(--surface-elevation-3);
-    color: var(--primary-violet);
-    transform: rotate(90deg);
+    background: linear-gradient(135deg, var(--primary-violet), var(--primary-violet-dark));
+    border-color: var(--primary-violet);
+    color: var(--text-on-primary);
+    box-shadow:
+        0 4px 12px var(--glow-violet),
+        0 0 20px var(--glow-violet-soft);
+    transform: scale(1.1);
 }
 
 .github-modal-close .dashicons {
@@ -564,10 +621,45 @@
 .github-modal-footer {
     margin-top: 24px;
     padding-top: 20px;
-    border-top: 1px solid var(--border-color);
+    border-top: 2px solid var(--border-color);
     display: flex;
     gap: 12px;
     justify-content: flex-end;
+}
+
+.github-modal-footer .button {
+    background: linear-gradient(135deg, var(--primary-violet), var(--primary-violet-dark));
+    border-color: var(--primary-violet);
+    color: var(--text-on-primary);
+    box-shadow:
+        0 4px 12px var(--glow-violet-soft),
+        0 0 20px var(--glow-violet-soft);
+}
+
+.github-modal-footer .button:hover {
+    background: linear-gradient(135deg, var(--primary-violet-light), var(--primary-violet));
+    box-shadow:
+        0 6px 20px var(--glow-violet),
+        0 0 30px var(--glow-violet-soft);
+    transform: translateY(-2px);
+}
+
+.github-modal-footer .button.button-secondary {
+    background: linear-gradient(135deg, var(--surface-elevation-2), var(--surface-elevation-3));
+    border-color: var(--border-color);
+    color: var(--text-primary);
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.3),
+        0 0 15px var(--glow-violet-soft);
+}
+
+.github-modal-footer .button.button-secondary:hover {
+    background: linear-gradient(135deg, var(--surface-elevation-3), var(--surface-elevation-2));
+    border-color: var(--primary-violet);
+    box-shadow:
+        0 6px 20px var(--glow-violet-soft),
+        0 0 25px var(--glow-violet-soft);
+    transform: translateY(-2px);
 }
 
 /* ========================================
@@ -575,11 +667,12 @@
    ======================================== */
 
 .dashicons {
-    transition: transform var(--transition-fast);
+    transition: all var(--transition-normal);
 }
 
 button:hover .dashicons {
-    transform: scale(1.1);
+    transform: scale(1.05);
+    filter: drop-shadow(0 0 8px var(--glow-violet));
 }
 
 .github-sync-btn .dashicons-update {
