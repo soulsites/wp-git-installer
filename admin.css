@@ -49,7 +49,7 @@
    Settings Page Background
    ======================================== */
 
-.wrap {
+.wrap, .plugins_page_github-plugin-installer {
     background: var(--surface-bg) !important;
     color: var(--text-primary) !important;
     padding: 20px !important;
@@ -78,9 +78,9 @@
 
 .github-card {
     background: linear-gradient(145deg, var(--surface-bg), var(--surface-elevation-1)) !important;
-    border: 2px solid transparent !important;
+    border: 2px solid var(--primary-violet-ultra-light) !important;
     border-radius: var(--border-radius-md) !important;
-    padding: 24px !important;
+    padding: 48px !important;
     margin-bottom: 24px !important;
     box-shadow:
         0 4px 12px rgba(0, 0, 0, 0.4),
@@ -152,19 +152,21 @@
     border-radius: var(--border-radius-sm);
     font-size: 14px;
     transition: all var(--transition-normal);
-    background: var(--surface-elevation-1);
-    color: var(--text-primary);
+    background: var(--surface-elevation-1) !important;
+    color: var(--text-primary)  !important;
 }
 
 .form-section input[type="text"]:focus,
 .form-section input[type="password"]:focus,
-.form-section select:focus {
+.form-section select:focus, .form-section input[type="text"]:hover,
+.form-section input[type="password"]:hover,
+.form-section select:hover {
     outline: none;
     border-color: var(--primary-violet);
     box-shadow:
         0 0 0 4px var(--glow-violet-soft),
         0 0 20px var(--glow-violet);
-    background: var(--surface-elevation-2);
+    background: var(--surface-elevation-2)  !important;
 }
 
 .form-section .description {
@@ -286,7 +288,7 @@
    Buttons
    ======================================== */
 
-.button {
+.plugins_page_github-plugin-installer .button {
     border-radius: var(--border-radius-sm) !important;
     font-weight: 500 !important;
     transition: all var(--transition-normal) !important;
@@ -299,7 +301,7 @@
     overflow: hidden !important;
 }
 
-.button-primary {
+.plugins_page_github-plugin-installer .button-primary {
     background: linear-gradient(135deg, var(--primary-violet), var(--primary-violet-dark)) !important;
     border-color: var(--primary-violet) !important;
     color: var(--text-on-primary) !important;
@@ -308,7 +310,7 @@
         0 0 20px var(--glow-violet-soft) !important;
 }
 
-.button-primary:hover {
+.plugins_page_github-plugin-installer .button-primary:hover {
     background: linear-gradient(135deg, var(--primary-violet-light), var(--primary-violet)) !important;
     box-shadow:
         0 6px 20px var(--glow-violet),
@@ -316,18 +318,18 @@
     border-color: var(--primary-violet-light) !important;
 }
 
-.button-primary:active {
+.plugins_page_github-plugin-installer .button-primary:active {
     box-shadow:
         0 2px 8px var(--glow-violet-soft),
         0 0 15px var(--glow-violet-soft) !important;
 }
 
-.button-small {
+.plugins_page_github-plugin-installer .button-small {
     padding: 6px 12px !important;
     font-size: 13px !important;
 }
 
-.button-large {
+.plugins_page_github-plugin-installer .button-large {
     padding: 12px 24px !important;
     font-size: 15px !important;
 }
@@ -776,11 +778,12 @@
    Dashicons Enhancements
    ======================================== */
 
-.dashicons {
+.plugins_page_github-plugin-installer .dashicons {
     transition: all var(--transition-normal);
+	margin-left: -5px !important;
 }
 
-button:hover .dashicons {
+.plugins_page_github-plugin-installer button:hover .dashicons {
     filter: drop-shadow(0 0 12px var(--glow-violet-strong)) !important;
 }
 
@@ -858,7 +861,7 @@ button:hover .dashicons {
 }
 
 /* Focus styles for keyboard navigation */
-button:focus-visible,
+.plugins_page_github-plugin-installer button:focus-visible,
 input:focus-visible,
 select:focus-visible {
     outline: 3px solid var(--primary-violet);
