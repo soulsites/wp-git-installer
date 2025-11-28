@@ -46,6 +46,17 @@
 }
 
 /* ========================================
+   Settings Page Background
+   ======================================== */
+
+.wrap {
+    background: var(--surface-bg) !important;
+    color: var(--text-primary) !important;
+    padding: 20px !important;
+    min-height: 100vh;
+}
+
+/* ========================================
    Container & Cards
    ======================================== */
 
@@ -66,38 +77,43 @@
 }
 
 .github-card {
-    background: linear-gradient(145deg, var(--surface-bg), var(--surface-elevation-1));
-    border: 2px solid var(--border-color);
-    border-radius: var(--border-radius-md);
-    padding: 24px;
-    margin-bottom: 24px;
+    background: linear-gradient(145deg, var(--surface-bg), var(--surface-elevation-1)) !important;
+    border: 2px solid transparent !important;
+    border-radius: var(--border-radius-md) !important;
+    padding: 24px !important;
+    margin-bottom: 24px !important;
     box-shadow:
         0 4px 12px rgba(0, 0, 0, 0.4),
-        0 0 30px var(--glow-violet-soft);
-    transition: all var(--transition-normal);
-    position: relative;
-    overflow: hidden;
+        0 0 30px var(--glow-violet-soft) !important;
+    transition: all var(--transition-normal) !important;
+    position: relative !important;
+    overflow: visible !important;
+    background-clip: padding-box !important;
 }
 
 .github-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 3px;
-    background: linear-gradient(90deg, var(--primary-violet), var(--primary-violet-light), var(--primary-violet));
-    box-shadow: 0 0 20px var(--glow-violet);
-    transition: all var(--transition-normal);
+    content: '' !important;
+    position: absolute !important;
+    top: -2px !important;
+    left: -2px !important;
+    right: -2px !important;
+    bottom: -2px !important;
+    background: linear-gradient(135deg, var(--primary-violet), var(--primary-violet-light), var(--primary-violet-dark), var(--primary-violet)) !important;
+    border-radius: var(--border-radius-md) !important;
+    z-index: -1 !important;
+    box-shadow: 0 0 20px var(--glow-violet) !important;
+    transition: all var(--transition-normal) !important;
 }
 
 .github-card:hover {
-    border-color: var(--border-glow);
     box-shadow:
         0 8px 24px rgba(0, 0, 0, 0.5),
-        0 0 40px var(--glow-violet),
-        inset 0 0 60px var(--glow-violet-soft);
-    transform: translateY(-2px);
+        0 0 60px var(--glow-violet-strong),
+        inset 0 0 80px var(--glow-violet-soft) !important;
+}
+
+.github-card:hover::before {
+    box-shadow: 0 0 40px var(--glow-violet-strong) !important;
 }
 
 .github-card h2 {
@@ -158,27 +174,112 @@
     line-height: 1.5;
 }
 
+/* ========================================
+   Toggle Switch (Checkbox)
+   ======================================== */
+
 .checkbox-label {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 500;
-    cursor: pointer;
-    padding: 8px;
-    border-radius: var(--border-radius-sm);
-    transition: background-color var(--transition-fast);
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    padding: 8px !important;
+    border-radius: var(--border-radius-sm) !important;
+    transition: background-color var(--transition-fast) !important;
 }
 
 .checkbox-label:hover {
-    background-color: var(--surface-elevation-1);
+    background-color: var(--surface-elevation-1) !important;
 }
 
+/* Hide default checkbox */
 .checkbox-label input[type="checkbox"] {
-    margin: 0;
-    width: 18px;
-    height: 18px;
-    cursor: pointer;
-    accent-color: var(--primary-violet);
+    position: absolute !important;
+    opacity: 0 !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
+/* Toggle Switch Container */
+.checkbox-label {
+    position: relative !important;
+    padding-left: 70px !important;
+}
+
+.checkbox-label::before {
+    content: '' !important;
+    position: absolute !important;
+    left: 8px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    width: 54px !important;
+    height: 28px !important;
+    background: linear-gradient(135deg, var(--surface-elevation-3), var(--surface-elevation-2)) !important;
+    border: 2px solid var(--border-color) !important;
+    border-radius: 28px !important;
+    transition: all var(--transition-normal) !important;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Toggle Switch Knob */
+.checkbox-label::after {
+    content: '' !important;
+    position: absolute !important;
+    left: 12px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    width: 22px !important;
+    height: 22px !important;
+    background: linear-gradient(135deg, var(--text-secondary), #6b7280) !important;
+    border-radius: 50% !important;
+    transition: all var(--transition-normal) !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Checked State - Track */
+.checkbox-label input[type="checkbox"]:checked + * ,
+.checkbox-label:has(input[type="checkbox"]:checked)::before {
+    background: linear-gradient(135deg, var(--primary-violet), var(--primary-violet-dark)) !important;
+    border-color: var(--primary-violet-light) !important;
+    box-shadow:
+        inset 0 2px 8px rgba(0, 0, 0, 0.3),
+        0 0 20px var(--glow-violet-soft) !important;
+}
+
+/* Checked State - Knob */
+.checkbox-label:has(input[type="checkbox"]:checked)::after {
+    transform: translateY(-50%) translateX(26px) !important;
+    background: linear-gradient(135deg, #ffffff, var(--text-primary)) !important;
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.4),
+        0 0 15px var(--glow-violet) !important;
+}
+
+/* Hover State */
+.checkbox-label:hover::before {
+    box-shadow:
+        inset 0 2px 8px rgba(0, 0, 0, 0.3),
+        0 0 25px var(--glow-violet-soft) !important;
+}
+
+.checkbox-label:has(input[type="checkbox"]:checked):hover::before {
+    box-shadow:
+        inset 0 2px 8px rgba(0, 0, 0, 0.3),
+        0 0 30px var(--glow-violet) !important;
+}
+
+.checkbox-label:hover::after {
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.5),
+        0 0 15px var(--glow-violet-soft) !important;
+}
+
+/* Focus State */
+.checkbox-label input[type="checkbox"]:focus-visible + *,
+.checkbox-label:has(input[type="checkbox"]:focus-visible)::before {
+    outline: 3px solid var(--primary-violet) !important;
+    outline-offset: 2px !important;
 }
 
 /* ========================================
@@ -186,132 +287,129 @@
    ======================================== */
 
 .button {
-    border-radius: var(--border-radius-sm);
-    font-weight: 500;
-    transition: all var(--transition-normal);
-    border: 2px solid transparent;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
+    border-radius: var(--border-radius-sm) !important;
+    font-weight: 500 !important;
+    transition: all var(--transition-normal) !important;
+    border: 2px solid transparent !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    cursor: pointer !important;
+    position: relative !important;
+    overflow: hidden !important;
 }
 
 .button-primary {
-    background: linear-gradient(135deg, var(--primary-violet), var(--primary-violet-dark));
-    border-color: var(--primary-violet);
-    color: var(--text-on-primary);
+    background: linear-gradient(135deg, var(--primary-violet), var(--primary-violet-dark)) !important;
+    border-color: var(--primary-violet) !important;
+    color: var(--text-on-primary) !important;
     box-shadow:
         0 4px 12px var(--glow-violet-soft),
-        0 0 20px var(--glow-violet-soft);
+        0 0 20px var(--glow-violet-soft) !important;
 }
 
 .button-primary:hover {
-    background: linear-gradient(135deg, var(--primary-violet-light), var(--primary-violet));
+    background: linear-gradient(135deg, var(--primary-violet-light), var(--primary-violet)) !important;
     box-shadow:
         0 6px 20px var(--glow-violet),
-        0 0 30px var(--glow-violet-soft);
-    transform: translateY(-2px);
+        0 0 40px var(--glow-violet-strong) !important;
+    border-color: var(--primary-violet-light) !important;
 }
 
 .button-primary:active {
-    transform: translateY(0);
     box-shadow:
         0 2px 8px var(--glow-violet-soft),
-        0 0 15px var(--glow-violet-soft);
+        0 0 15px var(--glow-violet-soft) !important;
 }
 
 .button-small {
-    padding: 6px 12px;
-    font-size: 13px;
+    padding: 6px 12px !important;
+    font-size: 13px !important;
 }
 
 .button-large {
-    padding: 12px 24px;
-    font-size: 15px;
+    padding: 12px 24px !important;
+    font-size: 15px !important;
 }
 
 .github-edit-btn {
-    background: linear-gradient(135deg, var(--primary-violet-ultra-light), var(--primary-violet));
-    border-color: var(--primary-violet);
-    color: var(--text-on-primary);
+    background: linear-gradient(135deg, var(--primary-violet-ultra-light), var(--primary-violet)) !important;
+    border-color: var(--primary-violet) !important;
+    color: var(--text-on-primary) !important;
     box-shadow:
         0 4px 12px var(--glow-violet-soft),
-        0 0 20px var(--glow-violet-soft);
+        0 0 20px var(--glow-violet-soft) !important;
 }
 
 .github-edit-btn:hover {
-    background: linear-gradient(135deg, var(--primary-violet), var(--primary-violet-dark));
+    background: linear-gradient(135deg, var(--primary-violet), var(--primary-violet-dark)) !important;
     box-shadow:
         0 6px 20px var(--glow-violet),
-        0 0 30px var(--glow-violet-soft);
-    transform: translateY(-2px) scale(1.02);
+        0 0 40px var(--glow-violet-strong) !important;
+    border-color: var(--primary-violet-light) !important;
 }
 
 .github-sync-btn {
-    position: relative;
-    overflow: hidden;
-    background: linear-gradient(135deg, var(--primary-violet), var(--primary-violet-dark));
-    border-color: var(--primary-violet);
-    color: var(--text-on-primary);
+    position: relative !important;
+    overflow: hidden !important;
+    background: linear-gradient(135deg, var(--primary-violet), var(--primary-violet-dark)) !important;
+    border-color: var(--primary-violet) !important;
+    color: var(--text-on-primary) !important;
     box-shadow:
         0 4px 12px var(--glow-violet-soft),
-        0 0 20px var(--glow-violet-soft);
+        0 0 20px var(--glow-violet-soft) !important;
 }
 
 .github-sync-btn::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.15);
-    transform: translate(-50%, -50%);
-    transition: all var(--transition-slow);
-    opacity: 0;
+    content: '' !important;
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    width: 0 !important;
+    height: 0 !important;
+    border-radius: 50% !important;
+    background: rgba(255, 255, 255, 0.15) !important;
+    transform: translate(-50%, -50%) !important;
+    transition: all var(--transition-slow) !important;
+    opacity: 0 !important;
 }
 
 .github-sync-btn:hover {
-    background: linear-gradient(135deg, var(--primary-violet-light), var(--primary-violet));
+    background: linear-gradient(135deg, var(--primary-violet-light), var(--primary-violet)) !important;
     box-shadow:
         0 6px 20px var(--glow-violet),
-        0 0 30px var(--glow-violet-soft);
-    transform: translateY(-2px);
+        0 0 40px var(--glow-violet-strong) !important;
+    border-color: var(--primary-violet-light) !important;
 }
 
 .github-sync-btn:hover::before {
-    width: 300px;
-    height: 300px;
-    opacity: 1;
+    width: 300px !important;
+    height: 300px !important;
+    opacity: 1 !important;
 }
 
 .github-sync-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-    filter: grayscale(0.3);
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+    filter: grayscale(0.3) !important;
 }
 
 .github-delete-btn {
-    background: linear-gradient(135deg, var(--surface-elevation-2), var(--surface-elevation-3));
-    border-color: var(--error-red);
-    color: var(--error-red);
+    background: linear-gradient(135deg, var(--surface-elevation-2), var(--surface-elevation-3)) !important;
+    border-color: var(--error-red) !important;
+    color: var(--error-red) !important;
     box-shadow:
         0 4px 12px rgba(239, 68, 68, 0.2),
-        0 0 20px rgba(239, 68, 68, 0.1);
+        0 0 20px rgba(239, 68, 68, 0.1) !important;
 }
 
 .github-delete-btn:hover {
-    background: linear-gradient(135deg, var(--error-red), #dc2626);
-    border-color: var(--error-red);
-    color: var(--text-on-primary);
+    background: linear-gradient(135deg, var(--error-red), #dc2626) !important;
+    border-color: var(--error-red) !important;
+    color: var(--text-on-primary) !important;
     box-shadow:
         0 6px 20px rgba(239, 68, 68, 0.5),
-        0 0 30px rgba(239, 68, 68, 0.3);
-    transform: translateY(-2px);
+        0 0 50px rgba(239, 68, 68, 0.4) !important;
 }
 
 .button-group {
@@ -327,63 +425,78 @@
    ======================================== */
 
 .projects-table {
-    margin-top: 20px;
-    border-radius: var(--border-radius-sm);
-    overflow: hidden;
+    margin-top: 20px !important;
+    border-radius: var(--border-radius-sm) !important;
+    overflow: hidden !important;
     box-shadow:
         0 4px 12px rgba(0, 0, 0, 0.4),
-        0 0 30px var(--glow-violet-soft);
-    border: 2px solid var(--border-color);
+        0 0 30px var(--glow-violet-soft) !important;
+    border: 2px solid transparent !important;
+    position: relative !important;
+    background-clip: padding-box !important;
+}
+
+.projects-table::before {
+    content: '' !important;
+    position: absolute !important;
+    top: -2px !important;
+    left: -2px !important;
+    right: -2px !important;
+    bottom: -2px !important;
+    background: linear-gradient(135deg, var(--primary-violet), var(--primary-violet-light), var(--primary-violet-dark), var(--primary-violet)) !important;
+    border-radius: var(--border-radius-sm) !important;
+    z-index: -1 !important;
+    box-shadow: 0 0 20px var(--glow-violet) !important;
 }
 
 .projects-table thead {
-    background: linear-gradient(135deg, var(--primary-violet), var(--primary-violet-dark), var(--primary-violet-darker));
-    color: var(--text-on-primary);
-    box-shadow: 0 4px 20px var(--glow-violet);
+    background: linear-gradient(135deg, var(--primary-violet), var(--primary-violet-dark), var(--primary-violet-darker)) !important;
+    color: var(--text-on-primary) !important;
+    box-shadow: 0 4px 20px var(--glow-violet) !important;
 }
 
 .projects-table thead th {
-    padding: 14px 12px;
-    font-weight: 600;
-    text-align: left;
-    border: none;
+    padding: 14px 12px !important;
+    font-weight: 600 !important;
+    text-align: left !important;
+    border: none !important;
+    color: var(--text-on-primary) !important;
 }
 
 .projects-table tbody tr {
-    transition: all var(--transition-normal);
-    border-bottom: 2px solid var(--border-color);
-    background: var(--surface-elevation-1);
+    transition: all var(--transition-normal) !important;
+    border-bottom: 2px solid var(--border-color) !important;
+    background: var(--surface-elevation-1) !important;
 }
 
 .projects-table tbody tr:hover {
-    background: linear-gradient(90deg, var(--surface-elevation-2), var(--surface-elevation-1));
+    background: linear-gradient(90deg, var(--surface-elevation-2), var(--surface-elevation-1)) !important;
     box-shadow:
         inset 4px 0 0 var(--primary-violet),
-        0 0 20px var(--glow-violet-soft);
-    transform: translateX(4px);
+        0 0 30px var(--glow-violet-soft) !important;
 }
 
 .projects-table td {
-    padding: 14px 12px;
-    vertical-align: middle;
-    color: var(--text-primary);
+    padding: 14px 12px !important;
+    vertical-align: middle !important;
+    color: var(--text-primary) !important;
 }
 
 .projects-table td code {
-    background: linear-gradient(135deg, var(--surface-elevation-3), var(--surface-elevation-2));
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    color: var(--primary-violet-light);
-    border: 1px solid var(--primary-violet);
-    box-shadow: 0 0 10px var(--glow-violet-soft);
+    background: linear-gradient(135deg, var(--surface-elevation-3), var(--surface-elevation-2)) !important;
+    padding: 4px 8px !important;
+    border-radius: 4px !important;
+    font-size: 12px !important;
+    color: var(--primary-violet-light) !important;
+    border: 1px solid var(--primary-violet) !important;
+    box-shadow: 0 0 10px var(--glow-violet-soft) !important;
 }
 
 .project-actions {
-    white-space: nowrap;
-    display: flex;
-    gap: 6px;
-    align-items: center;
+    white-space: nowrap !important;
+    display: flex !important;
+    gap: 6px !important;
+    align-items: center !important;
 }
 
 /* ========================================
@@ -599,13 +712,12 @@
 }
 
 .github-modal-close:hover {
-    background: linear-gradient(135deg, var(--primary-violet), var(--primary-violet-dark));
-    border-color: var(--primary-violet);
-    color: var(--text-on-primary);
+    background: linear-gradient(135deg, var(--primary-violet), var(--primary-violet-dark)) !important;
+    border-color: var(--primary-violet) !important;
+    color: var(--text-on-primary) !important;
     box-shadow:
         0 4px 12px var(--glow-violet),
-        0 0 20px var(--glow-violet-soft);
-    transform: scale(1.1);
+        0 0 30px var(--glow-violet-strong) !important;
 }
 
 .github-modal-close .dashicons {
@@ -637,29 +749,27 @@
 }
 
 .github-modal-footer .button:hover {
-    background: linear-gradient(135deg, var(--primary-violet-light), var(--primary-violet));
+    background: linear-gradient(135deg, var(--primary-violet-light), var(--primary-violet)) !important;
     box-shadow:
         0 6px 20px var(--glow-violet),
-        0 0 30px var(--glow-violet-soft);
-    transform: translateY(-2px);
+        0 0 40px var(--glow-violet-strong) !important;
 }
 
 .github-modal-footer .button.button-secondary {
-    background: linear-gradient(135deg, var(--surface-elevation-2), var(--surface-elevation-3));
-    border-color: var(--border-color);
-    color: var(--text-primary);
+    background: linear-gradient(135deg, var(--surface-elevation-2), var(--surface-elevation-3)) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-primary) !important;
     box-shadow:
         0 4px 12px rgba(0, 0, 0, 0.3),
-        0 0 15px var(--glow-violet-soft);
+        0 0 15px var(--glow-violet-soft) !important;
 }
 
 .github-modal-footer .button.button-secondary:hover {
-    background: linear-gradient(135deg, var(--surface-elevation-3), var(--surface-elevation-2));
-    border-color: var(--primary-violet);
+    background: linear-gradient(135deg, var(--surface-elevation-3), var(--surface-elevation-2)) !important;
+    border-color: var(--primary-violet) !important;
     box-shadow:
         0 6px 20px var(--glow-violet-soft),
-        0 0 25px var(--glow-violet-soft);
-    transform: translateY(-2px);
+        0 0 35px var(--glow-violet) !important;
 }
 
 /* ========================================
@@ -671,8 +781,7 @@
 }
 
 button:hover .dashicons {
-    transform: scale(1.05);
-    filter: drop-shadow(0 0 8px var(--glow-violet));
+    filter: drop-shadow(0 0 12px var(--glow-violet-strong)) !important;
 }
 
 .github-sync-btn .dashicons-update {
