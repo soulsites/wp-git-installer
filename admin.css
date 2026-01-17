@@ -366,6 +366,7 @@
     vertical-align: middle !important;
     color: var(--text-primary) !important;
     letter-spacing: var(--letter-spacing-normal) !important;
+    overflow-x: scroll;
 }
 
 .projects-table td code {
@@ -376,6 +377,7 @@
     color: var(--text-secondary) !important;
     border: none !important;
     letter-spacing: var(--letter-spacing-normal) !important;
+    text-wrap-mode: nowrap;
 }
 
 .project-actions {
