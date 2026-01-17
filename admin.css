@@ -1,59 +1,68 @@
 /**
  * GitHub Plugin Installer - Admin Styles
- * Material Design 3 inspired with violet accent colors and glow effects
+ * Material Design 3 - Light Theme with Pastel Blue Accents
  */
 
 :root {
-    /* Main Violet Color Palette */
-    --primary-violet: #9333ea;
-    --primary-violet-light: #c084fc;
-    --primary-violet-dark: #6b21a8;
-    --primary-violet-ultra-light: #a855f7;
-    --primary-violet-darker: #581c87;
+    /* Pastel Blue Color Palette */
+    --primary-blue: #a8c5e6;
+    --primary-blue-light: #cfe0f3;
+    --primary-blue-dark: #7da8d4;
+    --primary-blue-hover: #91b5dd;
 
-    /* Glow Colors - Consistent and Strong */
-    --glow-violet: rgba(147, 51, 234, 0.5);
-    --glow-violet-strong: rgba(147, 51, 234, 0.7);
-    --glow-violet-soft: rgba(147, 51, 234, 0.25);
+    /* Light Surface Colors */
+    --surface-bg: #fafbfc;
+    --surface-card: #ffffff;
+    --surface-elevation: #f5f7f9;
 
-    /* Complementary Colors */
-    --success-green: #10b981;
-    --error-red: #ef4444;
-    --warning-amber: #f59e0b;
-
-    /* Dark Surface Colors */
-    --surface-bg: #0f0f1e;
-    --surface-elevation-1: #1a1a2e;
-    --surface-elevation-2: #242438;
-    --surface-elevation-3: #2e2e48;
-
-    /* Dark Text Colors */
-    --text-primary: #e5e7eb;
-    --text-secondary: #9ca3af;
+    /* Light Text Colors */
+    --text-primary: #2c3e50;
+    --text-secondary: #5a6c7d;
+    --text-tertiary: #8896a4;
     --text-on-primary: #ffffff;
 
-    /* Border & Shadow */
-    --border-color: #374151;
-    --border-glow: rgba(147, 51, 234, 0.3);
-    --border-radius-sm: 8px;
-    --border-radius-md: 12px;
-    --border-radius-lg: 16px;
+    /* Semantic Colors */
+    --success-green: #81c995;
+    --error-red: #e89393;
+    --warning-amber: #f5c27a;
 
-    /* Transitions - Smooth and Gentle */
+    /* Spacing Scale */
+    --spacing-xs: 8px;
+    --spacing-sm: 16px;
+    --spacing-md: 24px;
+    --spacing-lg: 32px;
+    --spacing-xl: 48px;
+    --spacing-2xl: 64px;
+
+    /* Border Radius */
+    --radius-sm: 12px;
+    --radius-md: 16px;
+    --radius-lg: 20px;
+    --radius-xl: 24px;
+
+    /* Typography */
+    --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --letter-spacing-tight: -0.02em;
+    --letter-spacing-normal: 0;
+    --letter-spacing-wide: 0.02em;
+    --letter-spacing-wider: 0.05em;
+
+    /* Transitions */
     --transition-fast: 200ms cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-normal: 350ms cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ========================================
-   Settings Page Background
+   Global Styles
    ======================================== */
 
-.wrap, .plugins_page_github-plugin-installer {
+.wrap,
+.plugins_page_github-plugin-installer {
     background: var(--surface-bg) !important;
     color: var(--text-primary) !important;
-    padding: 20px !important;
+    padding: var(--spacing-xl) !important;
     min-height: 100vh;
+    font-family: var(--font-sans) !important;
 }
 
 /* ========================================
@@ -62,68 +71,31 @@
 
 .github-installer-container {
     max-width: 1200px;
-    animation: fadeIn var(--transition-slow) ease-out;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    margin: 0 auto;
 }
 
 .github-card {
-    background: linear-gradient(145deg, var(--surface-bg), var(--surface-elevation-1)) !important;
-    border: 2px solid var(--primary-violet-ultra-light) !important;
-    border-radius: var(--border-radius-md) !important;
-    padding: 48px !important;
-    margin-bottom: 24px !important;
-    box-shadow:
-        0 4px 12px rgba(0, 0, 0, 0.4),
-        0 0 30px var(--glow-violet-soft) !important;
-    transition: all var(--transition-normal) !important;
-    position: relative !important;
-    overflow: visible !important;
-    background-clip: padding-box !important;
-}
-
-.github-card::before {
-    content: '' !important;
-    position: absolute !important;
-    top: -2px !important;
-    left: -2px !important;
-    right: -2px !important;
-    bottom: -2px !important;
-    background: linear-gradient(135deg, var(--primary-violet), var(--primary-violet-light), var(--primary-violet-dark), var(--primary-violet)) !important;
-    border-radius: var(--border-radius-md) !important;
-    z-index: -1 !important;
-    box-shadow: 0 0 20px var(--glow-violet) !important;
-    transition: all var(--transition-normal) !important;
+    background: var(--surface-card) !important;
+    border: none !important;
+    border-radius: var(--radius-lg) !important;
+    padding: var(--spacing-2xl) !important;
+    margin-bottom: var(--spacing-lg) !important;
+    transition: transform var(--transition-normal) !important;
 }
 
 .github-card:hover {
-    box-shadow:
-        0 8px 24px rgba(0, 0, 0, 0.5),
-        0 0 60px var(--glow-violet-strong),
-        inset 0 0 80px var(--glow-violet-soft) !important;
-}
-
-.github-card:hover::before {
-    box-shadow: 0 0 40px var(--glow-violet-strong) !important;
+    transform: translateY(-2px);
 }
 
 .github-card h2 {
-    margin-top: 0;
-    padding-bottom: 16px;
-    border-bottom: 2px solid var(--surface-elevation-3);
-    color: var(--text-primary);
-    font-size: 20px;
-    font-weight: 600;
-    letter-spacing: -0.01em;
+    margin: 0 0 var(--spacing-lg) 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    color: var(--text-primary) !important;
+    font-size: 28px !important;
+    font-weight: 600 !important;
+    letter-spacing: var(--letter-spacing-tight) !important;
+    line-height: 1.2 !important;
 }
 
 /* ========================================
@@ -131,49 +103,51 @@
    ======================================== */
 
 .form-section {
-    margin-bottom: 20px;
+    margin-bottom: var(--spacing-lg);
 }
 
 .form-section label {
-    display: inline-block;
-    font-weight: 600;
-    margin-bottom: 8px;
+    display: block;
+    font-weight: 500;
+    margin-bottom: var(--spacing-xs);
     color: var(--text-primary);
-    font-size: 14px;
+    font-size: 15px;
+    letter-spacing: var(--letter-spacing-wide);
 }
 
 .form-section input[type="text"],
 .form-section input[type="password"],
 .form-section select {
     width: 100%;
-    max-width: 500px;
-    padding: 10px 14px;
-    border: 2px solid var(--border-color);
-    border-radius: var(--border-radius-sm);
-    font-size: 14px;
+    max-width: 600px;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 15px;
     transition: all var(--transition-normal);
-    background: var(--surface-elevation-1) !important;
-    color: var(--text-primary)  !important;
+    background: var(--surface-elevation) !important;
+    color: var(--text-primary) !important;
+    font-family: var(--font-sans);
+    letter-spacing: var(--letter-spacing-normal);
 }
 
 .form-section input[type="text"]:focus,
 .form-section input[type="password"]:focus,
-.form-section select:focus, .form-section input[type="text"]:hover,
+.form-section select:focus,
+.form-section input[type="text"]:hover,
 .form-section input[type="password"]:hover,
 .form-section select:hover {
     outline: none;
-    border-color: var(--primary-violet);
-    box-shadow:
-        0 0 0 4px var(--glow-violet-soft),
-        0 0 20px var(--glow-violet);
-    background: var(--surface-elevation-2)  !important;
+    background: var(--primary-blue-light) !important;
+    transform: translateY(-1px);
 }
 
 .form-section .description {
     color: var(--text-secondary);
-    font-size: 13px;
-    margin-top: 6px;
-    line-height: 1.5;
+    font-size: 14px;
+    margin-top: var(--spacing-xs);
+    line-height: 1.6;
+    letter-spacing: var(--letter-spacing-normal);
 }
 
 /* ========================================
@@ -183,19 +157,19 @@
 .checkbox-label {
     display: flex !important;
     align-items: center !important;
-    gap: 12px !important;
+    gap: var(--spacing-sm) !important;
     font-weight: 500 !important;
     cursor: pointer !important;
-    padding: 8px !important;
-    border-radius: var(--border-radius-sm) !important;
+    padding: var(--spacing-sm) !important;
+    border-radius: var(--radius-sm) !important;
     transition: background-color var(--transition-fast) !important;
+    letter-spacing: var(--letter-spacing-wide) !important;
 }
 
 .checkbox-label:hover {
-    background-color: var(--surface-elevation-1) !important;
+    background-color: var(--surface-elevation) !important;
 }
 
-/* Hide default checkbox */
 .checkbox-label input[type="checkbox"] {
     position: absolute !important;
     opacity: 0 !important;
@@ -203,7 +177,6 @@
     height: 0 !important;
 }
 
-/* Toggle Switch Container */
 .checkbox-label {
     position: relative !important;
     padding-left: 70px !important;
@@ -212,19 +185,17 @@
 .checkbox-label::before {
     content: '' !important;
     position: absolute !important;
-    left: 8px !important;
+    left: var(--spacing-xs) !important;
     top: 50% !important;
     transform: translateY(-50%) !important;
     width: 54px !important;
     height: 28px !important;
-    background: linear-gradient(135deg, var(--surface-elevation-3), var(--surface-elevation-2)) !important;
-    border: 2px solid var(--border-color) !important;
+    background: var(--surface-elevation) !important;
+    border: none !important;
     border-radius: 28px !important;
     transition: all var(--transition-normal) !important;
-    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3) !important;
 }
 
-/* Toggle Switch Knob */
 .checkbox-label::after {
     content: '' !important;
     position: absolute !important;
@@ -233,55 +204,28 @@
     transform: translateY(-50%) !important;
     width: 22px !important;
     height: 22px !important;
-    background: linear-gradient(135deg, var(--text-secondary), #6b7280) !important;
+    background: var(--text-tertiary) !important;
     border-radius: 50% !important;
     transition: all var(--transition-normal) !important;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4) !important;
 }
 
-/* Checked State - Track */
-.checkbox-label input[type="checkbox"]:checked + * ,
 .checkbox-label:has(input[type="checkbox"]:checked)::before {
-    background: linear-gradient(135deg, var(--primary-violet), var(--primary-violet-dark)) !important;
-    border-color: var(--primary-violet-light) !important;
-    box-shadow:
-        inset 0 2px 8px rgba(0, 0, 0, 0.3),
-        0 0 20px var(--glow-violet-soft) !important;
+    background: var(--primary-blue) !important;
 }
 
-/* Checked State - Knob */
 .checkbox-label:has(input[type="checkbox"]:checked)::after {
     transform: translateY(-50%) translateX(26px) !important;
-    background: linear-gradient(135deg, #ffffff, var(--text-primary)) !important;
-    box-shadow:
-        0 2px 8px rgba(0, 0, 0, 0.4),
-        0 0 15px var(--glow-violet) !important;
+    background: var(--text-on-primary) !important;
 }
 
-/* Hover State */
 .checkbox-label:hover::before {
-    box-shadow:
-        inset 0 2px 8px rgba(0, 0, 0, 0.3),
-        0 0 25px var(--glow-violet-soft) !important;
+    background: var(--primary-blue-light) !important;
 }
 
-.checkbox-label:has(input[type="checkbox"]:checked):hover::before {
-    box-shadow:
-        inset 0 2px 8px rgba(0, 0, 0, 0.3),
-        0 0 30px var(--glow-violet) !important;
-}
-
-.checkbox-label:hover::after {
-    box-shadow:
-        0 2px 8px rgba(0, 0, 0, 0.5),
-        0 0 15px var(--glow-violet-soft) !important;
-}
-
-/* Focus State */
 .checkbox-label input[type="checkbox"]:focus-visible + *,
 .checkbox-label:has(input[type="checkbox"]:focus-visible)::before {
-    outline: 3px solid var(--primary-violet) !important;
-    outline-offset: 2px !important;
+    outline: 2px solid var(--primary-blue);
+    outline-offset: 2px;
 }
 
 /* ========================================
@@ -289,135 +233,85 @@
    ======================================== */
 
 .plugins_page_github-plugin-installer .button {
-    border-radius: var(--border-radius-sm) !important;
+    border-radius: var(--radius-sm) !important;
     font-weight: 500 !important;
     transition: all var(--transition-normal) !important;
-    border: 2px solid transparent !important;
+    border: none !important;
     display: inline-flex !important;
     align-items: center !important;
-    gap: 6px !important;
+    gap: var(--spacing-xs) !important;
     cursor: pointer !important;
-    position: relative !important;
-    overflow: hidden !important;
-}
-
-.plugins_page_github-plugin-installer .button-primary {
-    background: linear-gradient(135deg, var(--primary-violet), var(--primary-violet-dark)) !important;
-    border-color: var(--primary-violet) !important;
-    color: var(--text-on-primary) !important;
-    box-shadow:
-        0 4px 12px var(--glow-violet-soft),
-        0 0 20px var(--glow-violet-soft) !important;
-}
-
-.plugins_page_github-plugin-installer .button-primary:hover {
-    background: linear-gradient(135deg, var(--primary-violet-light), var(--primary-violet)) !important;
-    box-shadow:
-        0 6px 20px var(--glow-violet),
-        0 0 40px var(--glow-violet-strong) !important;
-    border-color: var(--primary-violet-light) !important;
-}
-
-.plugins_page_github-plugin-installer .button-primary:active {
-    box-shadow:
-        0 2px 8px var(--glow-violet-soft),
-        0 0 15px var(--glow-violet-soft) !important;
-}
-
-.plugins_page_github-plugin-installer .button-small {
-    padding: 6px 12px !important;
-    font-size: 13px !important;
-}
-
-.plugins_page_github-plugin-installer .button-large {
-    padding: 12px 24px !important;
+    padding: var(--spacing-sm) var(--spacing-lg) !important;
+    letter-spacing: var(--letter-spacing-wide) !important;
     font-size: 15px !important;
 }
 
-.github-edit-btn {
-    background: linear-gradient(135deg, var(--primary-violet-ultra-light), var(--primary-violet)) !important;
-    border-color: var(--primary-violet) !important;
+.plugins_page_github-plugin-installer .button-primary {
+    background: var(--primary-blue) !important;
     color: var(--text-on-primary) !important;
-    box-shadow:
-        0 4px 12px var(--glow-violet-soft),
-        0 0 20px var(--glow-violet-soft) !important;
+}
+
+.plugins_page_github-plugin-installer .button-primary:hover {
+    background: var(--primary-blue-hover) !important;
+    transform: translateY(-2px);
+}
+
+.plugins_page_github-plugin-installer .button-primary:active {
+    transform: translateY(0);
+}
+
+.plugins_page_github-plugin-installer .button-small {
+    padding: 10px var(--spacing-md) !important;
+    font-size: 14px !important;
+}
+
+.plugins_page_github-plugin-installer .button-large {
+    padding: var(--spacing-md) var(--spacing-xl) !important;
+    font-size: 16px !important;
+}
+
+.github-edit-btn {
+    background: var(--primary-blue-light) !important;
+    color: var(--text-primary) !important;
 }
 
 .github-edit-btn:hover {
-    background: linear-gradient(135deg, var(--primary-violet), var(--primary-violet-dark)) !important;
-    box-shadow:
-        0 6px 20px var(--glow-violet),
-        0 0 40px var(--glow-violet-strong) !important;
-    border-color: var(--primary-violet-light) !important;
+    background: var(--primary-blue) !important;
+    color: var(--text-on-primary) !important;
+    transform: translateY(-2px);
 }
 
 .github-sync-btn {
-    position: relative !important;
-    overflow: hidden !important;
-    background: linear-gradient(135deg, var(--primary-violet), var(--primary-violet-dark)) !important;
-    border-color: var(--primary-violet) !important;
+    background: var(--primary-blue) !important;
     color: var(--text-on-primary) !important;
-    box-shadow:
-        0 4px 12px var(--glow-violet-soft),
-        0 0 20px var(--glow-violet-soft) !important;
-}
-
-.github-sync-btn::before {
-    content: '' !important;
-    position: absolute !important;
-    top: 50% !important;
-    left: 50% !important;
-    width: 0 !important;
-    height: 0 !important;
-    border-radius: 50% !important;
-    background: rgba(255, 255, 255, 0.15) !important;
-    transform: translate(-50%, -50%) !important;
-    transition: all var(--transition-slow) !important;
-    opacity: 0 !important;
 }
 
 .github-sync-btn:hover {
-    background: linear-gradient(135deg, var(--primary-violet-light), var(--primary-violet)) !important;
-    box-shadow:
-        0 6px 20px var(--glow-violet),
-        0 0 40px var(--glow-violet-strong) !important;
-    border-color: var(--primary-violet-light) !important;
-}
-
-.github-sync-btn:hover::before {
-    width: 300px !important;
-    height: 300px !important;
-    opacity: 1 !important;
+    background: var(--primary-blue-dark) !important;
+    transform: translateY(-2px);
 }
 
 .github-sync-btn:disabled {
     opacity: 0.5 !important;
     cursor: not-allowed !important;
-    filter: grayscale(0.3) !important;
+    transform: none !important;
 }
 
 .github-delete-btn {
-    background: linear-gradient(135deg, var(--surface-elevation-2), var(--surface-elevation-3)) !important;
-    border-color: var(--error-red) !important;
+    background: var(--surface-elevation) !important;
     color: var(--error-red) !important;
-    box-shadow:
-        0 4px 12px rgba(239, 68, 68, 0.2),
-        0 0 20px rgba(239, 68, 68, 0.1) !important;
 }
 
 .github-delete-btn:hover {
-    background: linear-gradient(135deg, var(--error-red), #dc2626) !important;
-    border-color: var(--error-red) !important;
+    background: var(--error-red) !important;
     color: var(--text-on-primary) !important;
-    box-shadow:
-        0 6px 20px rgba(239, 68, 68, 0.5),
-        0 0 50px rgba(239, 68, 68, 0.4) !important;
+    transform: translateY(-2px);
 }
 
 .button-group {
-    margin-top: 24px;
+    margin-top: var(--spacing-lg);
     display: flex;
-    gap: 12px;
+    gap: var(--spacing-sm);
     align-items: center;
     flex-wrap: wrap;
 }
@@ -427,77 +321,61 @@
    ======================================== */
 
 .projects-table {
-    margin-top: 20px !important;
-    border-radius: var(--border-radius-sm) !important;
+    margin-top: var(--spacing-lg) !important;
+    border-radius: var(--radius-md) !important;
     overflow: hidden !important;
-    box-shadow:
-        0 4px 12px rgba(0, 0, 0, 0.4),
-        0 0 30px var(--glow-violet-soft) !important;
-    border: 2px solid transparent !important;
-    position: relative !important;
-    background-clip: padding-box !important;
-}
-
-.projects-table::before {
-    content: '' !important;
-    position: absolute !important;
-    top: -2px !important;
-    left: -2px !important;
-    right: -2px !important;
-    bottom: -2px !important;
-    background: linear-gradient(135deg, var(--primary-violet), var(--primary-violet-light), var(--primary-violet-dark), var(--primary-violet)) !important;
-    border-radius: var(--border-radius-sm) !important;
-    z-index: -1 !important;
-    box-shadow: 0 0 20px var(--glow-violet) !important;
+    border: none !important;
+    background: var(--surface-card) !important;
 }
 
 .projects-table thead {
-    background: linear-gradient(135deg, var(--primary-violet), var(--primary-violet-dark), var(--primary-violet-darker)) !important;
+    background: var(--primary-blue) !important;
     color: var(--text-on-primary) !important;
-    box-shadow: 0 4px 20px var(--glow-violet) !important;
 }
 
 .projects-table thead th {
-    padding: 14px 12px !important;
+    padding: var(--spacing-md) var(--spacing-sm) !important;
     font-weight: 600 !important;
     text-align: left !important;
     border: none !important;
     color: var(--text-on-primary) !important;
+    letter-spacing: var(--letter-spacing-wider) !important;
+    text-transform: uppercase !important;
+    font-size: 13px !important;
 }
 
 .projects-table tbody tr {
     transition: all var(--transition-normal) !important;
-    border-bottom: 2px solid var(--border-color) !important;
-    background: var(--surface-elevation-1) !important;
+    border-bottom: 1px solid var(--surface-elevation) !important;
+    background: var(--surface-card) !important;
 }
 
 .projects-table tbody tr:hover {
-    background: linear-gradient(90deg, var(--surface-elevation-2), var(--surface-elevation-1)) !important;
-    box-shadow:
-        inset 4px 0 0 var(--primary-violet),
-        0 0 30px var(--glow-violet-soft) !important;
+    background: var(--surface-bg) !important;
+    transform: scale(1.01);
 }
 
 .projects-table td {
-    padding: 14px 12px !important;
+    padding: var(--spacing-md) var(--spacing-sm) !important;
     vertical-align: middle !important;
     color: var(--text-primary) !important;
+    letter-spacing: var(--letter-spacing-normal) !important;
 }
 
 .projects-table td code {
-    background: linear-gradient(135deg, var(--surface-elevation-3), var(--surface-elevation-2)) !important;
-    padding: 4px 8px !important;
-    border-radius: 4px !important;
-    font-size: 12px !important;
-    color: var(--primary-violet-light) !important;
-    border: 1px solid var(--primary-violet) !important;
-    box-shadow: 0 0 10px var(--glow-violet-soft) !important;
+    background: var(--surface-elevation) !important;
+    padding: 6px var(--spacing-sm) !important;
+    border-radius: var(--spacing-xs) !important;
+    font-size: 13px !important;
+    color: var(--text-secondary) !important;
+    border: none !important;
+    letter-spacing: var(--letter-spacing-normal) !important;
 }
 
 .project-actions {
     white-space: nowrap !important;
     display: flex !important;
-    gap: 6px !important;
+    gap: var(--spacing-xs) !important;
     align-items: center !important;
 }
 
@@ -506,66 +384,32 @@
    ======================================== */
 
 .github-sync-status {
-    font-size: 13px;
-    padding: 12px 16px;
-    border-radius: var(--border-radius-sm);
-    margin-top: 12px;
+    font-size: 14px;
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-radius: var(--radius-sm);
+    margin-top: var(--spacing-sm);
     display: none;
     font-weight: 500;
-    border: 2px solid;
-    border-left: 4px solid;
-    animation: slideDown var(--transition-slow) ease-out;
-}
-
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    border: none;
+    letter-spacing: var(--letter-spacing-normal);
 }
 
 .github-sync-status.success {
-    background: linear-gradient(135deg, #064e3b, #065f46);
-    color: #d1fae5;
-    border-color: var(--success-green);
+    background: var(--success-green);
+    color: var(--text-on-primary);
     display: block;
-    box-shadow:
-        0 4px 12px rgba(16, 185, 129, 0.4),
-        0 0 30px rgba(16, 185, 129, 0.3);
 }
 
 .github-sync-status.error {
-    background: linear-gradient(135deg, #7f1d1d, #991b1b);
-    color: #fee2e2;
-    border-color: var(--error-red);
+    background: var(--error-red);
+    color: var(--text-on-primary);
     display: block;
-    box-shadow:
-        0 4px 12px rgba(239, 68, 68, 0.4),
-        0 0 30px rgba(239, 68, 68, 0.3);
 }
 
 .github-sync-status.loading {
-    background: linear-gradient(135deg, var(--primary-violet-dark), var(--primary-violet));
+    background: var(--primary-blue);
     color: var(--text-on-primary);
-    border-color: var(--primary-violet);
     display: block;
-    box-shadow:
-        0 4px 12px var(--glow-violet),
-        0 0 30px var(--glow-violet-soft);
-    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-@keyframes pulse {
-    0%, 100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.8;
-    }
 }
 
 /* ========================================
@@ -573,26 +417,23 @@
    ======================================== */
 
 .info-box {
-    background: linear-gradient(135deg, var(--surface-elevation-2), var(--surface-elevation-3));
-    border: 2px solid var(--primary-violet);
-    border-left: 4px solid var(--primary-violet);
-    padding: 16px;
-    margin-top: 20px;
-    border-radius: var(--border-radius-sm);
-    box-shadow:
-        0 4px 12px rgba(0, 0, 0, 0.4),
-        0 0 30px var(--glow-violet-soft);
+    background: var(--surface-elevation);
+    border: none;
+    padding: var(--spacing-lg);
+    margin-top: var(--spacing-lg);
+    border-radius: var(--radius-md);
 }
 
 .info-box p {
     margin: 0;
     color: var(--text-primary);
-    line-height: 1.6;
+    line-height: 1.7;
+    letter-spacing: var(--letter-spacing-normal);
 }
 
 .info-box strong {
-    color: var(--primary-violet-light);
-    text-shadow: 0 0 10px var(--glow-violet-soft);
+    color: var(--primary-blue-dark);
+    font-weight: 600;
 }
 
 /* ========================================
@@ -603,17 +444,8 @@
     display: none;
     color: var(--text-secondary);
     font-style: italic;
-    font-size: 13px;
-    animation: fadeInOut 1.5s ease-in-out infinite;
-}
-
-@keyframes fadeInOut {
-    0%, 100% {
-        opacity: 0.5;
-    }
-    50% {
-        opacity: 1;
-    }
+    font-size: 14px;
+    letter-spacing: var(--letter-spacing-normal);
 }
 
 /* ========================================
@@ -630,16 +462,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    animation: modalFadeIn var(--transition-normal) ease-out;
-}
-
-@keyframes modalFadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
 }
 
 .github-modal-overlay {
@@ -648,63 +470,46 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.75);
+    background: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(8px);
     cursor: pointer;
 }
 
 .github-modal-content {
     position: relative;
-    background: linear-gradient(145deg, var(--surface-elevation-1), var(--surface-bg));
-    border-radius: var(--border-radius-lg);
+    background: var(--surface-card);
+    border-radius: var(--radius-xl);
     max-width: 600px;
     width: 90%;
     max-height: 85vh;
     overflow-y: auto;
-    box-shadow:
-        0 25px 50px rgba(0, 0, 0, 0.6),
-        0 0 80px var(--glow-violet),
-        inset 0 0 40px var(--glow-violet-soft);
-    animation: modalSlideUp var(--transition-slow) cubic-bezier(0.34, 1.56, 0.64, 1);
-    border: 2px solid var(--primary-violet);
-}
-
-@keyframes modalSlideUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px) scale(0.95);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
+    border: none;
 }
 
 .github-modal-header {
-    padding: 24px;
-    border-bottom: 2px solid var(--border-color);
+    padding: var(--spacing-lg);
+    border-bottom: 1px solid var(--surface-elevation);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: linear-gradient(135deg, var(--surface-elevation-2), var(--surface-elevation-1));
-    box-shadow: 0 4px 20px var(--glow-violet-soft);
+    background: var(--surface-card);
 }
 
 .github-modal-header h2 {
-    margin: 0;
-    padding: 0;
-    border: none;
-    font-size: 22px;
-    font-weight: 600;
-    color: var(--text-primary);
-    text-shadow: 0 0 20px var(--glow-violet-soft);
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    font-size: 24px !important;
+    font-weight: 600 !important;
+    color: var(--text-primary) !important;
+    letter-spacing: var(--letter-spacing-tight) !important;
 }
 
 .github-modal-close {
-    background: var(--surface-elevation-3);
-    border: 2px solid var(--border-color);
+    background: var(--surface-elevation);
+    border: none;
     cursor: pointer;
-    padding: 8px;
+    padding: var(--spacing-sm);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -714,12 +519,9 @@
 }
 
 .github-modal-close:hover {
-    background: linear-gradient(135deg, var(--primary-violet), var(--primary-violet-dark)) !important;
-    border-color: var(--primary-violet) !important;
+    background: var(--primary-blue) !important;
     color: var(--text-on-primary) !important;
-    box-shadow:
-        0 4px 12px var(--glow-violet),
-        0 0 30px var(--glow-violet-strong) !important;
+    transform: rotate(90deg);
 }
 
 .github-modal-close .dashicons {
@@ -729,49 +531,34 @@
 }
 
 .github-modal-body {
-    padding: 24px;
+    padding: var(--spacing-lg);
 }
 
 .github-modal-footer {
-    margin-top: 24px;
-    padding-top: 20px;
-    border-top: 2px solid var(--border-color);
+    margin-top: var(--spacing-lg);
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid var(--surface-elevation);
     display: flex;
-    gap: 12px;
+    gap: var(--spacing-sm);
     justify-content: flex-end;
 }
 
 .github-modal-footer .button {
-    background: linear-gradient(135deg, var(--primary-violet), var(--primary-violet-dark));
-    border-color: var(--primary-violet);
+    background: var(--primary-blue);
     color: var(--text-on-primary);
-    box-shadow:
-        0 4px 12px var(--glow-violet-soft),
-        0 0 20px var(--glow-violet-soft);
 }
 
 .github-modal-footer .button:hover {
-    background: linear-gradient(135deg, var(--primary-violet-light), var(--primary-violet)) !important;
-    box-shadow:
-        0 6px 20px var(--glow-violet),
-        0 0 40px var(--glow-violet-strong) !important;
+    background: var(--primary-blue-dark) !important;
 }
 
 .github-modal-footer .button.button-secondary {
-    background: linear-gradient(135deg, var(--surface-elevation-2), var(--surface-elevation-3)) !important;
-    border-color: var(--border-color) !important;
+    background: var(--surface-elevation) !important;
     color: var(--text-primary) !important;
-    box-shadow:
-        0 4px 12px rgba(0, 0, 0, 0.3),
-        0 0 15px var(--glow-violet-soft) !important;
 }
 
 .github-modal-footer .button.button-secondary:hover {
-    background: linear-gradient(135deg, var(--surface-elevation-3), var(--surface-elevation-2)) !important;
-    border-color: var(--primary-violet) !important;
-    box-shadow:
-        0 6px 20px var(--glow-violet-soft),
-        0 0 35px var(--glow-violet) !important;
+    background: var(--primary-blue-light) !important;
 }
 
 /* ========================================
@@ -780,11 +567,7 @@
 
 .plugins_page_github-plugin-installer .dashicons {
     transition: all var(--transition-normal);
-	margin-left: -5px !important;
-}
-
-.plugins_page_github-plugin-installer button:hover .dashicons {
-    filter: drop-shadow(0 0 12px var(--glow-violet-strong)) !important;
+    margin-left: -5px !important;
 }
 
 .github-sync-btn .dashicons-update {
@@ -806,12 +589,40 @@
 }
 
 /* ========================================
+   Typography Hierarchy
+   ======================================== */
+
+h1 {
+    font-size: 36px !important;
+    font-weight: 700 !important;
+    color: var(--text-primary) !important;
+    letter-spacing: var(--letter-spacing-tight) !important;
+    margin-bottom: var(--spacing-xl) !important;
+    line-height: 1.2 !important;
+}
+
+p {
+    line-height: 1.7 !important;
+    letter-spacing: var(--letter-spacing-normal) !important;
+}
+
+strong {
+    font-weight: 600 !important;
+    letter-spacing: var(--letter-spacing-wide) !important;
+}
+
+/* ========================================
    Responsive Design
    ======================================== */
 
 @media screen and (max-width: 782px) {
+    .wrap,
+    .plugins_page_github-plugin-installer {
+        padding: var(--spacing-md) !important;
+    }
+
     .github-card {
-        padding: 16px;
+        padding: var(--spacing-lg) !important;
     }
 
     .form-section input[type="text"],
@@ -822,7 +633,7 @@
 
     .project-actions {
         flex-direction: column;
-        gap: 8px;
+        gap: var(--spacing-xs);
     }
 
     .project-actions .button {
@@ -860,10 +671,24 @@
     }
 }
 
-/* Focus styles for keyboard navigation */
 .plugins_page_github-plugin-installer button:focus-visible,
 input:focus-visible,
 select:focus-visible {
-    outline: 3px solid var(--primary-violet);
+    outline: 2px solid var(--primary-blue);
     outline-offset: 2px;
+}
+
+/* ========================================
+   Utilities
+   ======================================== */
+
+.description a {
+    color: var(--primary-blue-dark);
+    text-decoration: none;
+    font-weight: 500;
+    letter-spacing: var(--letter-spacing-normal);
+}
+
+.description a:hover {
+    text-decoration: underline;
 }
