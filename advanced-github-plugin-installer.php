@@ -166,12 +166,12 @@ function github_plugin_installer_page() {
             <table class="wp-list-table widefat fixed striped projects-table">
                 <thead>
                     <tr>
-                        <th style="width: 20%;">Projektname</th>
-                        <th style="width: 30%;">Repository</th>
+                        <th style="width: 15%;">Projektname</th>
+                        <th style="width: 20%;">Repository</th>
                         <th style="width: 12%;">Version</th>
                         <th style="width: 10%;">Typ</th>
                         <th style="width: 15%;">Letzte Aktualisierung</th>
-                        <th style="width: 13%;">Aktionen</th>
+                        <th style="width: 28%;">Aktionen</th>
                     </tr>
                 </thead>
                 <tbody>
