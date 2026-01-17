@@ -4,21 +4,21 @@
  */
 
 :root {
-    /* Pastel Blue Color Palette */
-    --primary-blue: #a8c5e6;
-    --primary-blue-light: #cfe0f3;
-    --primary-blue-dark: #7da8d4;
-    --primary-blue-hover: #91b5dd;
+    /* Cyan Blue Color Palette */
+    --primary-blue: #4ABBD5;
+    --primary-blue-light: #7DD1E3;
+    --primary-blue-dark: #2A9FB8;
+    --primary-blue-hover: #3BAEC7;
 
     /* Light Surface Colors */
-    --surface-bg: #fafbfc;
+    --surface-bg: #f0f2f5;
     --surface-card: #ffffff;
-    --surface-elevation: #f5f7f9;
+    --surface-elevation: #f7f8fa;
 
     /* Light Text Colors */
-    --text-primary: #2c3e50;
-    --text-secondary: #5a6c7d;
-    --text-tertiary: #8896a4;
+    --text-primary: rgba(0, 0, 0, 0.8);
+    --text-secondary: rgba(0, 0, 0, 0.7);
+    --text-tertiary: rgba(0, 0, 0, 0.5);
     --text-on-primary: #ffffff;
 
     /* Semantic Colors */
@@ -56,11 +56,9 @@
    Global Styles
    ======================================== */
 
-.wrap,
 .plugins_page_github-plugin-installer {
     background: var(--surface-bg) !important;
     color: var(--text-primary) !important;
-    padding: var(--spacing-xl) !important;
     min-height: 100vh;
     font-family: var(--font-sans) !important;
 }
@@ -72,6 +70,7 @@
 .github-installer-container {
     max-width: 1200px;
     margin: 0 auto;
+    padding: var(--spacing-xl);
 }
 
 .github-card {
@@ -241,9 +240,12 @@
     align-items: center !important;
     gap: var(--spacing-xs) !important;
     cursor: pointer !important;
-    padding: var(--spacing-sm) var(--spacing-lg) !important;
+    padding: 12px var(--spacing-lg) !important;
     letter-spacing: var(--letter-spacing-wide) !important;
     font-size: 15px !important;
+    height: 45px !important;
+    max-height: 45px !important;
+    line-height: 1.4 !important;
 }
 
 .plugins_page_github-plugin-installer .button-primary {
@@ -261,13 +263,17 @@
 }
 
 .plugins_page_github-plugin-installer .button-small {
-    padding: 10px var(--spacing-md) !important;
+    padding: 8px var(--spacing-md) !important;
     font-size: 14px !important;
+    height: 38px !important;
+    max-height: 38px !important;
 }
 
 .plugins_page_github-plugin-installer .button-large {
-    padding: var(--spacing-md) var(--spacing-xl) !important;
-    font-size: 16px !important;
+    padding: 12px var(--spacing-xl) !important;
+    font-size: 15px !important;
+    height: 45px !important;
+    max-height: 45px !important;
 }
 
 .github-edit-btn {
@@ -592,7 +598,7 @@
    Typography Hierarchy
    ======================================== */
 
-h1 {
+.plugins_page_github-plugin-installer h1 {
     font-size: 36px !important;
     font-weight: 700 !important;
     color: var(--text-primary) !important;
@@ -601,12 +607,12 @@ h1 {
     line-height: 1.2 !important;
 }
 
-p {
+.plugins_page_github-plugin-installer p {
     line-height: 1.7 !important;
     letter-spacing: var(--letter-spacing-normal) !important;
 }
 
-strong {
+.plugins_page_github-plugin-installer strong {
     font-weight: 600 !important;
     letter-spacing: var(--letter-spacing-wide) !important;
 }
@@ -616,9 +622,8 @@ strong {
    ======================================== */
 
 @media screen and (max-width: 782px) {
-    .wrap,
-    .plugins_page_github-plugin-installer {
-        padding: var(--spacing-md) !important;
+    .github-installer-container {
+        padding: var(--spacing-md);
     }
 
     .github-card {
