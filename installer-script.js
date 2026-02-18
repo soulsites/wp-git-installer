@@ -147,12 +147,28 @@ jQuery(document).ready(function() {
                         location.reload();
                     }, 1500);
                 } else {
-                    statusDiv.removeClass('loading success').addClass('error').html('✗ Fehler: ' + response.data);
+                    var errorData = response.data;
+                    var message, debug;
+                    if (errorData && typeof errorData === 'object') {
+                        message = errorData.message || 'Unbekannter Fehler';
+                        debug = errorData.debug || null;
+                    } else {
+                        message = errorData || 'Unbekannter Fehler';
+                        debug = null;
+                    }
+                    console.error('[WP-Git-Installer] Sync-Fehler:', message, debug ? '\nDebug:\n' + debug : '');
+                    var html = '✗ Fehler: ' + message;
+                    if (debug) {
+                        html += '<details style="margin-top:6px;font-size:0.85em;white-space:pre-wrap;"><summary>Details anzeigen</summary>' + debug + '</details>';
+                    }
+                    statusDiv.removeClass('loading success').addClass('error').html(html);
                 }
             },
-            error: function() {
+            error: function(xhr, textStatus, errorThrown) {
                 button.prop('disabled', false).html('<span class="dashicons dashicons-update"></span> Update');
-                statusDiv.removeClass('loading success').addClass('error').html('✗ Ein Fehler ist aufgetreten.');
+                var detail = 'HTTP ' + xhr.status + ' ' + (errorThrown || textStatus);
+                console.error('[WP-Git-Installer] AJAX-Fehler beim Synchronisieren:', detail, xhr.responseText);
+                statusDiv.removeClass('loading success').addClass('error').html('✗ Verbindungsfehler: ' + detail);
             }
         });
     });
