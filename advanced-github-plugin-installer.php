@@ -575,6 +575,26 @@ function sync_github_project() {
 
     $project = $projects[$project_id];
 
+    // Helper: run a single git command, return ['output'=>[], 'code'=>int]
+    $run_git = function($cmd, $step_label) use ($plugin_dir_ref = null) {
+        $output = [];
+        $return_var = 0;
+        exec($cmd . ' 2>&1', $output, $return_var);
+        return ['output' => $output, 'code' => $return_var, 'label' => $step_label, 'cmd' => $cmd];
+    };
+
+    // Build a readable debug block from a result
+    $debug_line = function($result) {
+        $lines = [];
+        $lines[] = '[' . $result['label'] . '] Exit-Code: ' . $result['code'];
+        if (!empty($result['output'])) {
+            $lines[] = 'Ausgabe: ' . implode(' | ', array_filter(array_map('trim', $result['output'])));
+        }
+        return implode(' — ', $lines);
+    };
+
+    $log_prefix = '[WP-Git-Installer] Sync project_id=' . $project_id . ' repo=' . ($project['repo_url'] ?? '?');
+
     // Perform the sync
     try {
         $repo_url = $project['repo_url'];
@@ -584,67 +604,191 @@ function sync_github_project() {
         $repo_name = strtolower(basename(parse_url($repo_url, PHP_URL_PATH), '.git'));
         $plugin_dir = WP_PLUGIN_DIR . '/' . $repo_name;
 
+        error_log($log_prefix . ' | Plugin-Verzeichnis: ' . $plugin_dir . ' | Version: ' . ($version ?: 'latest'));
+
         if (!file_exists($plugin_dir)) {
-            wp_send_json_error('Plugin ist nicht installiert. Bitte installieren Sie es zuerst über das Formular oben.');
+            $msg = 'Plugin-Verzeichnis nicht gefunden: ' . $plugin_dir . '. Bitte installieren Sie es zuerst über das Formular oben.';
+            error_log($log_prefix . ' | FEHLER: ' . $msg);
+            wp_send_json_error($msg);
         }
+
+        $debug_steps = [];
 
         // Update remote URL with access token if private repository
         if ($project['is_private'] && !empty($access_token)) {
             $auth_repo_url = str_replace('https://', "https://{$access_token}@", $repo_url);
-            $set_url_command = "cd " . escapeshellarg($plugin_dir) . " && git remote set-url origin " . escapeshellarg($auth_repo_url) . " 2>&1";
-            exec($set_url_command, $url_output, $url_return);
+            $set_url_cmd = "cd " . escapeshellarg($plugin_dir) . " && git remote set-url origin " . escapeshellarg($auth_repo_url);
+            $set_url_result = [];
+            $set_url_code = 0;
+            exec($set_url_cmd . ' 2>&1', $set_url_result, $set_url_code);
+            if ($set_url_code !== 0) {
+                $detail = 'git remote set-url fehlgeschlagen (Exit ' . $set_url_code . '): ' . implode(' | ', array_filter(array_map('trim', $set_url_result)));
+                error_log($log_prefix . ' | FEHLER: ' . $detail);
+                wp_send_json_error('Authentifizierung fehlgeschlagen. ' . $detail);
+            }
         }
 
-        // Update existing plugin - validate version before checkout
-        if (!empty($version)) {
-            // Fetch all refs, discard local changes, and checkout specific version
-            $update_command = "cd " . escapeshellarg($plugin_dir) . " && git fetch --all --tags && git checkout -f " . escapeshellarg($version) . " && git clean -fd 2>&1";
-            exec($update_command, $output, $return_var);
-
-            if ($return_var !== 0) {
-                // Reset remote URL to original (without token) for security
-                if ($project['is_private'] && !empty($access_token)) {
-                    $reset_url_command = "cd " . escapeshellarg($plugin_dir) . " && git remote set-url origin " . escapeshellarg($repo_url) . " 2>&1";
-                    exec($reset_url_command, $reset_output, $reset_return);
+        $reset_url = function() use ($plugin_dir, $repo_url, $project, $access_token, $log_prefix) {
+            if ($project['is_private'] && !empty($access_token)) {
+                $cmd = "cd " . escapeshellarg($plugin_dir) . " && git remote set-url origin " . escapeshellarg($repo_url);
+                $out = [];
+                $code = 0;
+                exec($cmd . ' 2>&1', $out, $code);
+                if ($code !== 0) {
+                    error_log($log_prefix . ' | WARNUNG: Remote-URL zurücksetzen fehlgeschlagen (Exit ' . $code . '): ' . implode(' | ', array_filter(array_map('trim', $out))));
                 }
-                wp_send_json_error('Synchronisierung fehlgeschlagen: ' . implode("\n", $output));
+            }
+        };
+
+        if (!empty($version)) {
+            // --- Sync to specific version/tag ---
+
+            // Step 1: fetch
+            $fetch_out = [];
+            $fetch_code = 0;
+            exec("cd " . escapeshellarg($plugin_dir) . " && git fetch --all --tags 2>&1", $fetch_out, $fetch_code);
+            $debug_steps[] = 'git fetch --all --tags — Exit ' . $fetch_code . ($fetch_out ? ': ' . implode(' | ', array_filter(array_map('trim', $fetch_out))) : '');
+            error_log($log_prefix . ' | git fetch — Exit ' . $fetch_code . ': ' . implode(' | ', array_filter(array_map('trim', $fetch_out))));
+
+            if ($fetch_code !== 0) {
+                $reset_url();
+                $detail = implode("\n", $debug_steps);
+                error_log($log_prefix . ' | FEHLER bei git fetch');
+                wp_send_json_error([
+                    'message' => 'Synchronisierung fehlgeschlagen beim Abrufen der Änderungen (git fetch).',
+                    'debug'   => $detail,
+                ]);
+            }
+
+            // Step 2: checkout
+            $checkout_out = [];
+            $checkout_code = 0;
+            exec("cd " . escapeshellarg($plugin_dir) . " && git checkout -f " . escapeshellarg($version) . " 2>&1", $checkout_out, $checkout_code);
+            $debug_steps[] = 'git checkout -f ' . $version . ' — Exit ' . $checkout_code . ($checkout_out ? ': ' . implode(' | ', array_filter(array_map('trim', $checkout_out))) : '');
+            error_log($log_prefix . ' | git checkout — Exit ' . $checkout_code . ': ' . implode(' | ', array_filter(array_map('trim', $checkout_out))));
+
+            if ($checkout_code !== 0) {
+                $reset_url();
+                $detail = implode("\n", $debug_steps);
+                error_log($log_prefix . ' | FEHLER bei git checkout');
+                wp_send_json_error([
+                    'message' => 'Synchronisierung fehlgeschlagen beim Wechsel zur Version "' . $version . '" (git checkout).',
+                    'debug'   => $detail,
+                ]);
+            }
+
+            // Step 3: clean
+            $clean_out = [];
+            $clean_code = 0;
+            exec("cd " . escapeshellarg($plugin_dir) . " && git clean -fd 2>&1", $clean_out, $clean_code);
+            $debug_steps[] = 'git clean -fd — Exit ' . $clean_code . ($clean_out ? ': ' . implode(' | ', array_filter(array_map('trim', $clean_out))) : '');
+            error_log($log_prefix . ' | git clean — Exit ' . $clean_code . ': ' . implode(' | ', array_filter(array_map('trim', $clean_out))));
+
+            if ($clean_code !== 0) {
+                $reset_url();
+                $detail = implode("\n", $debug_steps);
+                error_log($log_prefix . ' | FEHLER bei git clean');
+                wp_send_json_error([
+                    'message' => 'Synchronisierung fehlgeschlagen beim Bereinigen lokaler Dateien (git clean).',
+                    'debug'   => $detail,
+                ]);
             }
         } else {
-            // If no version specified, get current branch and pull latest changes
-            // First, try to determine the default branch
-            $branch_command = "cd " . escapeshellarg($plugin_dir) . " && git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@'";
-            exec($branch_command, $branch_output, $branch_return);
+            // --- Sync to default branch ---
 
-            $default_branch = !empty($branch_output) ? trim($branch_output[0]) : 'main';
+            // Step 1: determine default branch
+            $branch_out = [];
+            $branch_code = 0;
+            exec("cd " . escapeshellarg($plugin_dir) . " && git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@'", $branch_out, $branch_code);
+            $default_branch = !empty($branch_out) ? trim($branch_out[0]) : 'main';
+            $debug_steps[] = 'Ermittelter Standard-Branch: "' . $default_branch . '"';
+            error_log($log_prefix . ' | Standard-Branch: ' . $default_branch);
 
-            // Fetch and checkout default branch, overwriting local changes
-            $update_command = "cd " . escapeshellarg($plugin_dir) . " && git fetch origin && git checkout -f " . escapeshellarg($default_branch) . " && git reset --hard origin/" . escapeshellarg($default_branch) . " && git clean -fd 2>&1";
-            exec($update_command, $output, $return_var);
+            // Step 2: fetch
+            $fetch_out = [];
+            $fetch_code = 0;
+            exec("cd " . escapeshellarg($plugin_dir) . " && git fetch origin 2>&1", $fetch_out, $fetch_code);
+            $debug_steps[] = 'git fetch origin — Exit ' . $fetch_code . ($fetch_out ? ': ' . implode(' | ', array_filter(array_map('trim', $fetch_out))) : '');
+            error_log($log_prefix . ' | git fetch origin — Exit ' . $fetch_code . ': ' . implode(' | ', array_filter(array_map('trim', $fetch_out))));
 
-            if ($return_var !== 0) {
-                // Reset remote URL to original (without token) for security
-                if ($project['is_private'] && !empty($access_token)) {
-                    $reset_url_command = "cd " . escapeshellarg($plugin_dir) . " && git remote set-url origin " . escapeshellarg($repo_url) . " 2>&1";
-                    exec($reset_url_command, $reset_output, $reset_return);
-                }
-                wp_send_json_error('Synchronisierung fehlgeschlagen: ' . implode("\n", $output));
+            if ($fetch_code !== 0) {
+                $reset_url();
+                $detail = implode("\n", $debug_steps);
+                error_log($log_prefix . ' | FEHLER bei git fetch');
+                wp_send_json_error([
+                    'message' => 'Synchronisierung fehlgeschlagen beim Abrufen der Änderungen (git fetch).',
+                    'debug'   => $detail,
+                ]);
+            }
+
+            // Step 3: checkout
+            $checkout_out = [];
+            $checkout_code = 0;
+            exec("cd " . escapeshellarg($plugin_dir) . " && git checkout -f " . escapeshellarg($default_branch) . " 2>&1", $checkout_out, $checkout_code);
+            $debug_steps[] = 'git checkout -f ' . $default_branch . ' — Exit ' . $checkout_code . ($checkout_out ? ': ' . implode(' | ', array_filter(array_map('trim', $checkout_out))) : '');
+            error_log($log_prefix . ' | git checkout — Exit ' . $checkout_code . ': ' . implode(' | ', array_filter(array_map('trim', $checkout_out))));
+
+            if ($checkout_code !== 0) {
+                $reset_url();
+                $detail = implode("\n", $debug_steps);
+                error_log($log_prefix . ' | FEHLER bei git checkout');
+                wp_send_json_error([
+                    'message' => 'Synchronisierung fehlgeschlagen beim Wechsel zum Branch "' . $default_branch . '" (git checkout).',
+                    'debug'   => $detail,
+                ]);
+            }
+
+            // Step 4: reset --hard
+            $reset_out = [];
+            $reset_code = 0;
+            exec("cd " . escapeshellarg($plugin_dir) . " && git reset --hard origin/" . escapeshellarg($default_branch) . " 2>&1", $reset_out, $reset_code);
+            $debug_steps[] = 'git reset --hard origin/' . $default_branch . ' — Exit ' . $reset_code . ($reset_out ? ': ' . implode(' | ', array_filter(array_map('trim', $reset_out))) : '');
+            error_log($log_prefix . ' | git reset --hard — Exit ' . $reset_code . ': ' . implode(' | ', array_filter(array_map('trim', $reset_out))));
+
+            if ($reset_code !== 0) {
+                $reset_url();
+                $detail = implode("\n", $debug_steps);
+                error_log($log_prefix . ' | FEHLER bei git reset --hard');
+                wp_send_json_error([
+                    'message' => 'Synchronisierung fehlgeschlagen beim Zurücksetzen auf origin/' . $default_branch . ' (git reset --hard).',
+                    'debug'   => $detail,
+                ]);
+            }
+
+            // Step 5: clean
+            $clean_out = [];
+            $clean_code = 0;
+            exec("cd " . escapeshellarg($plugin_dir) . " && git clean -fd 2>&1", $clean_out, $clean_code);
+            $debug_steps[] = 'git clean -fd — Exit ' . $clean_code . ($clean_out ? ': ' . implode(' | ', array_filter(array_map('trim', $clean_out))) : '');
+            error_log($log_prefix . ' | git clean — Exit ' . $clean_code . ': ' . implode(' | ', array_filter(array_map('trim', $clean_out))));
+
+            if ($clean_code !== 0) {
+                $reset_url();
+                $detail = implode("\n", $debug_steps);
+                error_log($log_prefix . ' | FEHLER bei git clean');
+                wp_send_json_error([
+                    'message' => 'Synchronisierung fehlgeschlagen beim Bereinigen lokaler Dateien (git clean).',
+                    'debug'   => $detail,
+                ]);
             }
         }
 
         // Reset remote URL to original (without token) for security
-        if ($project['is_private'] && !empty($access_token)) {
-            $reset_url_command = "cd " . escapeshellarg($plugin_dir) . " && git remote set-url origin " . escapeshellarg($repo_url) . " 2>&1";
-            exec($reset_url_command, $reset_output, $reset_return);
-        }
+        $reset_url();
 
         // Update last_synced timestamp
         $project['last_synced'] = current_time('mysql');
         $projects[$project_id] = $project;
         update_option('github_installer_projects', $projects);
 
+        error_log($log_prefix . ' | Synchronisierung erfolgreich.');
         wp_send_json_success('Projekt erfolgreich synchronisiert!');
     } catch (Exception $e) {
-        wp_send_json_error('Fehler bei der Synchronisierung: ' . $e->getMessage());
+        error_log($log_prefix . ' | EXCEPTION: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
+        wp_send_json_error([
+            'message' => 'Unerwarteter Fehler bei der Synchronisierung: ' . $e->getMessage(),
+            'debug'   => $e->getFile() . ':' . $e->getLine(),
+        ]);
     }
 }
 
