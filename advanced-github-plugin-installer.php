@@ -575,24 +575,6 @@ function sync_github_project() {
 
     $project = $projects[$project_id];
 
-    // Helper: run a single git command, return ['output'=>[], 'code'=>int]
-    $run_git = function($cmd, $step_label) use ($plugin_dir_ref = null) {
-        $output = [];
-        $return_var = 0;
-        exec($cmd . ' 2>&1', $output, $return_var);
-        return ['output' => $output, 'code' => $return_var, 'label' => $step_label, 'cmd' => $cmd];
-    };
-
-    // Build a readable debug block from a result
-    $debug_line = function($result) {
-        $lines = [];
-        $lines[] = '[' . $result['label'] . '] Exit-Code: ' . $result['code'];
-        if (!empty($result['output'])) {
-            $lines[] = 'Ausgabe: ' . implode(' | ', array_filter(array_map('trim', $result['output'])));
-        }
-        return implode(' — ', $lines);
-    };
-
     $log_prefix = '[WP-Git-Installer] Sync project_id=' . $project_id . ' repo=' . ($project['repo_url'] ?? '?');
 
     // Perform the sync
