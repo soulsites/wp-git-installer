@@ -291,8 +291,9 @@ function install_update_github_plugin($repo_url, $access_token, $selected_versio
     if ($is_update) {
         // Update existing plugin
         // Update remote URL with access token if provided
+        // Use oauth2: prefix to support both classic and fine-grained GitHub tokens
         if (!empty($access_token)) {
-            $auth_repo_url = str_replace('https://', "https://{$access_token}@", $repo_url);
+            $auth_repo_url = str_replace('https://', "https://oauth2:{$access_token}@", $repo_url);
             $set_url_command = "cd " . escapeshellarg($plugin_dir) . " && git remote set-url origin " . escapeshellarg($auth_repo_url) . " 2>&1";
             exec($set_url_command, $url_output, $url_return);
         }
@@ -341,7 +342,8 @@ function install_update_github_plugin($repo_url, $access_token, $selected_versio
         // Install new plugin
         $clone_command = "git clone ";
         if (!empty($access_token)) {
-            $repo_url_with_token = str_replace('https://', "https://{$access_token}@", $repo_url);
+            // Use oauth2: prefix to support both classic and fine-grained GitHub tokens
+            $repo_url_with_token = str_replace('https://', "https://oauth2:{$access_token}@", $repo_url);
             $clone_command .= escapeshellarg($repo_url_with_token) . " " . escapeshellarg($plugin_dir);
         } else {
             $clone_command .= escapeshellarg($repo_url) . " " . escapeshellarg($plugin_dir);
@@ -420,7 +422,7 @@ function preview_github_repo() {
     );
 
     if ($is_private && !empty($access_token)) {
-        $args['headers']['Authorization'] = 'token ' . $access_token;
+        $args['headers']['Authorization'] = 'Bearer ' . $access_token;
     }
 
     $response = wp_remote_get($api_url, $args);
@@ -467,7 +469,7 @@ function get_github_versions() {
     );
 
     if ($is_private && !empty($access_token)) {
-        $args['headers']['Authorization'] = 'token ' . $access_token;
+        $args['headers']['Authorization'] = 'Bearer ' . $access_token;
     }
 
     $response = wp_remote_get($api_url, $args);
@@ -597,8 +599,9 @@ function sync_github_project() {
         $debug_steps = [];
 
         // Update remote URL with access token if private repository
+        // Use oauth2: prefix to support both classic and fine-grained GitHub tokens
         if ($project['is_private'] && !empty($access_token)) {
-            $auth_repo_url = str_replace('https://', "https://{$access_token}@", $repo_url);
+            $auth_repo_url = str_replace('https://', "https://oauth2:{$access_token}@", $repo_url);
             $set_url_cmd = "cd " . escapeshellarg($plugin_dir) . " && git remote set-url origin " . escapeshellarg($auth_repo_url);
             $set_url_result = [];
             $set_url_code = 0;
