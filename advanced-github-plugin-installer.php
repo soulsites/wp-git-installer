@@ -50,6 +50,7 @@ function save_project($project_data) {
         'is_private' => (bool) $project_data['is_private'],
         'access_token' => !empty($project_data['access_token']) ? sanitize_text_field($project_data['access_token']) : '',
         'version' => sanitize_text_field($project_data['version']),
+        'respect_gitignore' => !empty($project_data['respect_gitignore']),
         'last_synced' => current_time('mysql')
     );
     update_option('github_installer_projects', $projects);
@@ -78,9 +79,10 @@ function github_plugin_installer_page() {
         $selected_version = sanitize_text_field($_POST['version']);
         $save_as_project = isset($_POST['save_as_project']) ? true : false;
         $project_name = sanitize_text_field($_POST['project_name']);
+        $respect_gitignore = isset($_POST['respect_gitignore']) ? true : false;
 
         // Install/Update the plugin
-        install_update_github_plugin($repo_url, $access_token, $selected_version);
+        install_update_github_plugin($repo_url, $access_token, $selected_version, $respect_gitignore);
 
         // Save as project if checkbox was checked
         if ($save_as_project && !empty($project_name)) {
@@ -89,7 +91,8 @@ function github_plugin_installer_page() {
                 'repo_url' => $repo_url,
                 'is_private' => $is_private,
                 'access_token' => $access_token,
-                'version' => $selected_version
+                'version' => $selected_version,
+                'respect_gitignore' => $respect_gitignore
             );
             save_project($project_data);
             echo '<div class="updated"><p>Projekt erfolgreich gespeichert!</p></div>';
@@ -147,6 +150,14 @@ function github_plugin_installer_page() {
                     <label for="project_name">Projektname</label>
                     <input type="text" id="project_name" name="project_name" class="regular-text" placeholder="z.B. Mein WordPress Plugin">
                     <p class="description">Ein einprägsamer Name für dieses Projekt</p>
+                </div>
+
+                <div class="form-section">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="respect_gitignore" name="respect_gitignore">
+                        <span>.gitignore beachten (vendor, node_modules etc. entfernen)</span>
+                    </label>
+                    <p class="description">Nach dem Download werden Verzeichnisse und Dateien entfernt, die in der <code>.gitignore</code> des Plugins aufgeführt sind. Spart Speicherplatz, wenn der Vendor-Ordner im Repository eingecheckt ist.</p>
                 </div>
 
                 <div class="button-group">
@@ -263,6 +274,14 @@ function github_plugin_installer_page() {
                             <span class="loading-indicator" id="edit-version-loading">Lade verfügbare Versionen...</span>
                         </div>
 
+                        <div class="form-section">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="edit_respect_gitignore" name="respect_gitignore">
+                                <span>.gitignore beachten (vendor, node_modules etc. entfernen)</span>
+                            </label>
+                            <p class="description">Bei jedem Update werden Verzeichnisse und Dateien entfernt, die in der <code>.gitignore</code> des Plugins aufgeführt sind.</p>
+                        </div>
+
                         <div class="github-modal-footer">
                             <button type="button" class="button github-modal-close">Abbrechen</button>
                             <button type="submit" class="button button-primary" id="save-project-btn">
@@ -277,7 +296,52 @@ function github_plugin_installer_page() {
     <?php
 }
 
-function install_update_github_plugin($repo_url, $access_token, $selected_version) {
+function apply_gitignore_cleanup($plugin_dir) {
+    $plugin_dir = realpath($plugin_dir);
+    if (!$plugin_dir) {
+        return;
+    }
+
+    // Remove untracked files that are ignored by .gitignore
+    exec("cd " . escapeshellarg($plugin_dir) . " && git clean -fdX 2>&1");
+
+    // Also remove tracked directories/files explicitly listed in .gitignore
+    $gitignore_file = $plugin_dir . '/.gitignore';
+    if (!file_exists($gitignore_file)) {
+        return;
+    }
+
+    $lines = file($gitignore_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        $line = trim($line);
+        // Skip comments, empty lines, and negations
+        if (empty($line) || $line[0] === '#' || $line[0] === '!') {
+            continue;
+        }
+        // Skip patterns with wildcards or shell glob characters (too broad to handle safely)
+        if (strpos($line, '*') !== false || strpos($line, '?') !== false || strpos($line, '[') !== false) {
+            continue;
+        }
+        $path = rtrim($line, '/');
+        // Skip absolute paths or path traversal attempts
+        if ($path[0] === '/' || strpos($path, '..') !== false) {
+            continue;
+        }
+        $full_path = $plugin_dir . '/' . $path;
+        // Resolve and verify the path stays within the plugin directory
+        $real_parent = realpath(dirname($full_path));
+        if (!$real_parent || strpos($real_parent . '/', $plugin_dir . '/') !== 0 && $real_parent !== $plugin_dir) {
+            continue;
+        }
+        if (is_dir($full_path)) {
+            exec("rm -rf " . escapeshellarg($full_path));
+        } elseif (is_file($full_path)) {
+            unlink($full_path);
+        }
+    }
+}
+
+function install_update_github_plugin($repo_url, $access_token, $selected_version, $respect_gitignore = false) {
     if (!filter_var($repo_url, FILTER_VALIDATE_URL)) {
         wp_die('Invalid GitHub URL provided.');
     }
@@ -368,6 +432,11 @@ function install_update_github_plugin($repo_url, $access_token, $selected_versio
                 wp_die('Failed to checkout version ' . $selected_version . '. Error: ' . implode("\n", $output));
             }
         }
+    }
+
+    // Remove gitignored files/directories if option is enabled
+    if ($respect_gitignore) {
+        apply_gitignore_cleanup($plugin_dir);
     }
 
     // Find the main plugin file
@@ -532,7 +601,8 @@ function save_github_project() {
         'repo_url' => esc_url_raw($_POST['repo_url']),
         'is_private' => !empty($_POST['is_private']) && $_POST['is_private'] !== 'false' && $_POST['is_private'] !== '0',
         'access_token' => isset($_POST['access_token']) ? sanitize_text_field($_POST['access_token']) : '',
-        'version' => sanitize_text_field($_POST['version'])
+        'version' => sanitize_text_field($_POST['version']),
+        'respect_gitignore' => !empty($_POST['respect_gitignore']) && $_POST['respect_gitignore'] !== 'false' && $_POST['respect_gitignore'] !== '0'
     );
 
     if (empty($project_data['name']) || empty($project_data['repo_url'])) {
@@ -758,6 +828,11 @@ function sync_github_project() {
         // Reset remote URL to original (without token) for security
         $reset_url();
 
+        // Remove gitignored files/directories if option is enabled
+        if (!empty($project['respect_gitignore'])) {
+            apply_gitignore_cleanup($plugin_dir);
+        }
+
         // Update last_synced timestamp
         $project['last_synced'] = current_time('mysql');
         $projects[$project_id] = $project;
@@ -812,6 +887,7 @@ function update_github_project() {
         'repo_url' => esc_url_raw($_POST['repo_url']),
         'is_private' => !empty($_POST['is_private']) && $_POST['is_private'] !== 'false' && $_POST['is_private'] !== '0',
         'version' => sanitize_text_field($_POST['version']),
+        'respect_gitignore' => !empty($_POST['respect_gitignore']) && $_POST['respect_gitignore'] !== 'false' && $_POST['respect_gitignore'] !== '0',
         'last_synced' => $projects[$project_id]['last_synced'] // Keep the existing last_synced time
     );
 

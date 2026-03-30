@@ -256,7 +256,8 @@ jQuery(document).ready(function() {
             repo_url: jQuery('#edit_repo_url').val(),
             is_private: jQuery('#edit_is_private').is(':checked'),
             access_token: jQuery('#edit_access_token').val(),
-            version: jQuery('#edit_version').val()
+            version: jQuery('#edit_version').val(),
+            respect_gitignore: jQuery('#edit_respect_gitignore').is(':checked')
         };
 
         var saveBtn = jQuery('#save-project-btn');
@@ -302,6 +303,7 @@ jQuery(document).ready(function() {
                     jQuery('#edit_repo_url').val(project.repo_url);
                     jQuery('#edit_is_private').prop('checked', project.is_private);
                     jQuery('#edit_access_token').val(''); // Clear token field for security
+                    jQuery('#edit_respect_gitignore').prop('checked', !!project.respect_gitignore);
 
                     // Show/hide access token section
                     if (project.is_private) {
