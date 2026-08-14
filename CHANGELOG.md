@@ -1,5 +1,40 @@
 # Changelog
 
+## Version 2.1.1
+
+### Fehlerbehebungen
+
+#### Git-Fehlermeldungen waren leer
+- **Ursache**: In den Git-Befehlsketten hing die Umleitung `2>&1` nur am letzten
+  Befehl (`… && git clean -fd 2>&1`). Git schreibt seine Fehler aber nach stderr,
+  und bei einer `&&`-Kette gilt eine Umleitung immer nur für den Befehl, an dem
+  sie steht. Scheiterte also `git fetch`, `git checkout` oder `git reset`, wurde
+  die Fehlermeldung nirgends eingefangen — das Backend zeigte nur
+  `Failed to update the plugin. Error: ` ohne jeden Hinweis auf die Ursache.
+- **Fix**: Alle Git-Aufrufe laufen jetzt über `agpi_run_command()`, das die
+  komplette Kette in eine Subshell klammert (`( … ) 2>&1`) und damit stdout und
+  stderr jedes Einzelbefehls einfängt. Betrifft Update, Klonen und Checkout —
+  beim Klonen und beim Checkout nach dem Klonen fehlte die Umleitung bisher ganz.
+- **Fehlermeldungen** enthalten jetzt zusätzlich den Exit-Code und einen
+  ausdrücklichen Hinweis, wenn ein Befehl gar keine Ausgabe geliefert hat.
+
+### Sicherheit
+
+- **Access-Token in Fehlerausgaben**: Während einer Operation enthält die
+  Remote-URL den Token, und Git gibt ihn in Fehlermeldungen mit aus
+  (`fatal: unable to access 'https://TOKEN@github.com/…'`). Da diese Ausgaben
+  jetzt tatsächlich im Backend und im Error-Log landen, werden Zugangsdaten
+  vorher durch `agpi_redact_credentials()` entfernt — sowohl der konkret
+  bekannte Token als auch generisch jede `user:pass@host`-Form.
+
+### Wartbarkeit
+
+- **Sync-Funktion entschlackt**: Die fünf nahezu identischen Schritt-Blöcke in
+  `sync_github_project()` (jeweils exec + Debug-Zeile + Error-Log + Abbruch)
+  laufen jetzt über einen gemeinsamen `$run_step`-Aufruf. Gleiches Verhalten,
+  rund 120 Zeilen weniger Duplikat — und die Token-Bereinigung kann nicht mehr
+  an einer einzelnen Stelle vergessen werden.
+
 ## Version 2.1 - 2024
 
 ### Neue Features
