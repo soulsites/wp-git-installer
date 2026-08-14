@@ -2,7 +2,7 @@
 /**
  * Plugin Name: GitHub Plugin Installer
  * Description: Install or update WordPress plugins directly from GitHub repositories with multi-project support and modern Material Design 3 UI
- * Version: 2.1.1
+ * Version: 2.1.2
  * Author: Christian Wedel
  */
 
