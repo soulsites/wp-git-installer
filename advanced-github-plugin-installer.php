@@ -455,8 +455,12 @@ function install_update_github_plugin($repo_url, $access_token, $selected_versio
                 );
             }
         } else {
-            // If no version specified, get default branch and pull latest changes
-            $branch_command = "cd " . escapeshellarg($plugin_dir) . " && git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@'";
+            // If no version specified, get default branch and pull latest changes.
+            // The default branch is asked directly from the remote (git ls-remote)
+            // instead of relying on the locally cached refs/remotes/origin/HEAD,
+            // which is only set once at clone time and does not update when the
+            // remote's default branch is changed (e.g. switched away and back).
+            $branch_command = "cd " . escapeshellarg($plugin_dir) . " && git ls-remote --symref origin HEAD 2>/dev/null | sed -n 's@^ref:[[:space:]]*refs/heads/\\([^[:space:]]*\\)[[:space:]]*HEAD@\\1@p'";
             exec($branch_command, $branch_output, $branch_return);
 
             $default_branch = !empty($branch_output) ? trim($branch_output[0]) : 'main';
@@ -827,11 +831,19 @@ function sync_github_project() {
         } else {
             // --- Sync to default branch ---
 
-            // Standard-Branch ermitteln. Fehlt refs/remotes/origin/HEAD (bei
-            // älteren Klonen häufig), liefert der Befehl nichts - dann wird
-            // "main" angenommen. Schlägt der anschließende Checkout deshalb
-            // fehl, steht der ermittelte Name in den Debug-Details.
-            exec("cd " . escapeshellarg($plugin_dir) . " && git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@'", $branch_out, $branch_code);
+            // Standard-Branch ermitteln. Wird direkt beim Remote per
+            // "git ls-remote --symref" erfragt, statt aus dem lokal
+            // gecachten refs/remotes/origin/HEAD gelesen zu werden: Dieser
+            // lokale Cache wird nur beim ursprünglichen Klonen gesetzt und
+            // von "git fetch" NICHT automatisch aktualisiert. Wurde der
+            // Standard-Branch auf GitHub zwischenzeitlich gewechselt (auch
+            // hin und wieder zurück), zeigt der Cache sonst dauerhaft auf den
+            // alten Branch-Namen - schlägt dieser danach fehl (z. B. weil er
+            // umbenannt oder gelöscht wurde), bricht die Synchronisierung ab.
+            // Liefert der Befehl nichts (z. B. Netzwerkproblem), wird "main"
+            // angenommen; schlägt der anschließende Checkout deshalb fehl,
+            // steht der ermittelte Name in den Debug-Details.
+            exec("cd " . escapeshellarg($plugin_dir) . " && git ls-remote --symref origin HEAD 2>/dev/null | sed -n 's@^ref:[[:space:]]*refs/heads/\\([^[:space:]]*\\)[[:space:]]*HEAD@\\1@p'", $branch_out, $branch_code);
             $default_branch = !empty($branch_out) ? trim($branch_out[0]) : 'main';
             $debug_steps[] = 'Ermittelter Standard-Branch: "' . $default_branch . '"';
             error_log($log_prefix . ' | Standard-Branch: ' . $default_branch);
