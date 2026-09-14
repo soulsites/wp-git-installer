@@ -756,6 +756,12 @@ function sync_github_project() {
             wp_send_json_error($msg);
         }
 
+        if (!is_dir($plugin_dir . '/.git')) {
+            $msg = 'Kein gültiges Git-Repository in ' . $plugin_dir . ' gefunden (kein .git-Verzeichnis). Bitte das Plugin über das Installationsformular oben neu installieren/klonen.';
+            error_log($log_prefix . ' | FEHLER: ' . $msg);
+            wp_send_json_error($msg);
+        }
+
         $debug_steps = [];
 
         // Update remote URL with access token if private repository
