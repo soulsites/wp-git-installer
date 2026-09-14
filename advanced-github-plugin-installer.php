@@ -417,7 +417,12 @@ function install_update_github_plugin($repo_url, $access_token, $selected_versio
     $repo_name = strtolower(basename(parse_url($repo_url, PHP_URL_PATH), '.git'));
     $plugin_dir = WP_PLUGIN_DIR . '/' . $repo_name;
 
-    $is_update = file_exists($plugin_dir);
+    // Nur ein Ordner mit .git zählt als bestehende Installation, die
+    // aktualisiert werden kann. Existiert der Ordner ohne .git (z. B. per
+    // ZIP installiert oder .git nachträglich entfernt), muss er wie eine
+    // Neuinstallation behandelt werden - sonst laufen git fetch/checkout
+    // gegen ein Verzeichnis, das gar kein Git-Repository ist.
+    $is_update = is_dir($plugin_dir) && is_dir($plugin_dir . '/.git');
 
     if ($is_update) {
         // Update existing plugin
@@ -488,6 +493,17 @@ function install_update_github_plugin($repo_url, $access_token, $selected_versio
         $reset_remote_url();
     } else {
         // Install new plugin
+        // Existiert am Zielort noch ein nicht-leerer, nicht-Git-Ordner (siehe
+        // $is_update oben), schlaegt "git clone" in dieses Verzeichnis fehl.
+        // Ihn stattdessen als Backup beiseiteschieben, statt Daten zu loeschen.
+        if (is_dir($plugin_dir)) {
+            $backup_dir = $plugin_dir . '-backup-' . time();
+            if (!rename($plugin_dir, $backup_dir)) {
+                wp_die('Konnte vorhandenes, nicht-Git-Verzeichnis nicht verschieben: ' . esc_html($plugin_dir));
+            }
+            error_log('[WP-Git-Installer] Nicht-Git-Verzeichnis vor Neuinstallation gesichert: ' . $backup_dir);
+        }
+
         $clone_command = "git clone ";
         if (!empty($access_token)) {
             $repo_url_with_token = str_replace('https://', "https://{$access_token}@", $repo_url);
