@@ -1,5 +1,18 @@
 # Changelog
 
+## Version 2.1.3
+
+### Fehlerbehebungen
+
+#### "fatal: not a git repository" beim Aktualisieren/Synchronisieren
+- **Ursache**: Das Plugin-Verzeichnis existierte, enthielt aber kein `.git`
+  (z. B. per ZIP-Upload oder WordPress-Updater installiert). Schon der erste
+  Befehl `git remote set-url` schlug fehl.
+- **Fix**: `agpi_ensure_git_repository()` initialisiert das Verzeichnis bei
+  fehlendem `.git` (`git init` + `git remote add origin`). Der folgende
+  `fetch` + `checkout -f` / `reset --hard` überschreibt die vorhandenen Dateien
+  mit dem Stand aus dem Repository. Gilt für Formular-Update und Projekt-Sync.
+
 ## Version 2.1.1
 
 ### Fehlerbehebungen

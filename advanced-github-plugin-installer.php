@@ -2,7 +2,7 @@
 /**
  * Plugin Name: GitHub Plugin Installer
  * Description: Install or update WordPress plugins directly from GitHub repositories with multi-project support and modern Material Design 3 UI
- * Version: 2.1.2
+ * Version: 2.1.3
  * Author: Christian Wedel
  */
 
@@ -363,6 +363,30 @@ function agpi_die_command_error($message, $output, $exit_code, $access_token = '
     wp_die(nl2br(esc_html(agpi_format_command_error($message, $output, $exit_code, $access_token))));
 }
 
+/**
+ * Stellt sicher, dass das Plugin-Verzeichnis ein Git-Repository ist.
+ *
+ * Existiert das Verzeichnis, enthält aber kein .git (z. B. per ZIP-Upload
+ * oder WordPress-Updater installiert, oder .git wurde gelöscht), schlägt
+ * jeder Git-Befehl mit "not a git repository" fehl. In diesem Fall wird das
+ * Repository hier initialisiert und "origin" gesetzt; der anschließende
+ * fetch + checkout -f / reset --hard überschreibt dann die vorhandenen Dateien.
+ */
+function agpi_ensure_git_repository($plugin_dir, $repo_url, &$output, &$exit_code) {
+    $output    = array();
+    $exit_code = 0;
+
+    if (file_exists($plugin_dir . '/.git')) {
+        return true;
+    }
+
+    $command = "cd " . escapeshellarg($plugin_dir)
+        . " && git init"
+        . " && git remote add origin " . escapeshellarg($repo_url);
+
+    return agpi_run_command($command, $output, $exit_code);
+}
+
 function apply_gitignore_cleanup($plugin_dir) {
     $plugin_dir = realpath($plugin_dir);
     if (!$plugin_dir) {
@@ -421,6 +445,15 @@ function install_update_github_plugin($repo_url, $access_token, $selected_versio
 
     if ($is_update) {
         // Update existing plugin
+        if (!agpi_ensure_git_repository($plugin_dir, $repo_url, $init_output, $init_return)) {
+            agpi_die_command_error(
+                'Failed to initialize Git repository in existing plugin directory.',
+                $init_output,
+                $init_return,
+                $access_token
+            );
+        }
+
         // Update remote URL with access token if provided
         if (!empty($access_token)) {
             $auth_repo_url = str_replace('https://', "https://{$access_token}@", $repo_url);
@@ -757,6 +790,18 @@ function sync_github_project() {
         }
 
         $debug_steps = [];
+
+        // Verzeichnis ohne .git (z. B. per ZIP installiert) als Repository initialisieren
+        $had_git = file_exists($plugin_dir . '/.git');
+        if (!agpi_ensure_git_repository($plugin_dir, $repo_url, $init_out, $init_code)) {
+            $detail = agpi_format_command_error('git init fehlgeschlagen.', $init_out, $init_code, $access_token);
+            error_log($log_prefix . ' | FEHLER: ' . $detail);
+            wp_send_json_error('Plugin-Verzeichnis ist kein Git-Repository und konnte nicht initialisiert werden. ' . $detail);
+        }
+        if (!$had_git) {
+            $debug_steps[] = 'Kein .git gefunden — Repository initialisiert (git init + remote add origin)';
+            error_log($log_prefix . ' | Kein .git gefunden, Repository initialisiert.');
+        }
 
         // Update remote URL with access token if private repository
         if ($project['is_private'] && !empty($access_token)) {
